@@ -1,1 +1,46 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import './app/shared/variables.scss';
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    font-size: $font-size;
+    font-family: $font-familly;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding: 1rem;
+    background: #0f1d20;
+    background-image: linear-gradient(rgba(203, 203, 203, 0.7) .1em, transparent .1em), linear-gradient(90deg, rgba(203, 203, 203, 0.7) .1em, transparent .1em);
+    background-size: 3em 3em;
+    background-position: 0 0;
+    align-items: center;
+    height: 100vh;
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
+    &::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background-image: url('../src/assets/icons/balance.svg');
+        background-size: contain;
+        opacity: 0.25;
+        z-index: -1;
+        top: 0;
+    }
+}
+
+body>* {
+    flex: 1;
+}
+
+.error {
+    color: red;
+}

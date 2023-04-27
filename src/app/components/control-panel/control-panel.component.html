@@ -1,0 +1,11 @@
+<div class="panel">
+    <div class="screen">
+        {{selectedNumber}}
+    </div>
+    <div class="panel-numbers">
+        <ng-container *ngFor="let number of responseNumbers">
+            <button [attr.data-number]="number" [class]="number == selectedNumber ? 'active' : ''" (click)="selectNumber(number)">{{number}}</button>
+        </ng-container>
+    </div>
+
+</div>

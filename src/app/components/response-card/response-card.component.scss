@@ -1,0 +1,54 @@
+.response-card {
+    font-size: 1.5rem;
+    background-color: #FFF;
+    padding: 1rem;
+    display: inline-block;
+    position: relative;
+    overflow: visible;
+    margin-top: 5px;
+    margin-left: 5px;
+    width: calc(100% - 10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .left-border,
+    .right-border,
+    .bottom-border,
+    .top-border {
+        position: absolute;
+        width: 2px;
+        height: calc(100%);
+        right: -5px;
+        top: 0px;
+        background-color: #FFF;
+        &::before,
+        &::after {
+            content: '';
+            width: 2px;
+            height: 2px;
+            background-color: #FFF;
+            position: absolute;
+            bottom: -6px;
+        }
+        &::after {
+            top: -6px;
+        }
+    }
+    .left-border {
+        left: -5px;
+    }
+    .top-border,
+    .bottom-border {
+        transform: translateY(calc(-50% - 5px));
+        left: 0%;
+        width: 100%;
+        height: 2px;
+        &::before,
+        &::after {
+            visibility: hidden;
+        }
+    }
+    .bottom-border {
+        top: calc(100% + 10px);
+    }
+}

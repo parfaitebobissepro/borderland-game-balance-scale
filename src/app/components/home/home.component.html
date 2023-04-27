@@ -1,0 +1,5 @@
+<form action="" [formGroup]="form">
+    <input type="text" formControlName="name" [(ngModel)]="name">
+    <span class="error">{{form.value.name.error}}</span>
+    <button (click)="createGameNewGame()">Créer une partie</button>
+</form>
