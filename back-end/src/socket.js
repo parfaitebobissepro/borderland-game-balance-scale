@@ -1,18 +1,13 @@
-// //Initialisation socket
-// class Socket {
-//     constructor(server) {
-//         this.server = server;
-//         this.io = require('socket.io')(server, {
-//             cors: {
-//                 origins: ['http://localhost:4200']
-//             }
-//         });
-//     }
-
-//     ioOnConnect = (callback) => this.io.on('connection', (socket) => callback(socket));
-//     socketOnConnect = (callback) => this.ioOnConnect((socket) => socket.on('connection', callback));
-// }
-
-// // const socketOnConnect = (callback) => io.on('connection', callback);
-
-// module.exports = Socket;
+let io;
+module.exports = {
+    init: (httpServer) => {
+        io = require("socket.io")(httpServer, { cors: { origins: ['http://localhost:4200'] }, allowEIO3: true });
+        return io;
+    },
+    getIO: () => {
+        if (!io) {
+            throw new Error("Socket.io not initialized");
+        }
+        return io;
+    },
+};

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from 'environment';
 import { Observable } from 'rxjs';
 import { io } from 'socket.io-client';
+import { Room } from 'src/app/models/room';
 
 @Injectable({
   providedIn: 'root'
@@ -14,36 +15,35 @@ export class SocketioService {
 
   }
 
-  setupSocketConnection(): Observable<string> {
-    return new Observable<string>((suscriber) => {
+  setupSocketConnection(): Observable<String> {
+    return new Observable<String>((suscriber) => {
       this.socket = io(environment.SOCKET_ENDPOINT);
       this.socket.emit('emit_test', 'Hello there from Angular.');
-      this.socket.on('receive_test', (data: string) => {
+      this.socket.on('receive_test', (data: String) => {
         suscriber.next(data);
         suscriber.complete();
       });
     });
   }
 
-  connectToRoom(room: string) {
-    this.socket.on('my broadcast', (data: string) => {
+  connectToRoom(room: String) {
+    this.socket.on('my broadcast', (data: String) => {
       console.log(data);
     });
   }
 
-  createRoom(name: string) {
+  createRoom(name: String) {
     try {
       this.socket.emit('createRoom', name);
     } catch (error) {
       console.log(error);
     }
   }
-  connectedToRoom(): Observable<string> {
-    let observable = new Observable<string>((suscriber) => {
+  createAndconnectToRoom(): Observable<Room> {
+    let observable = new Observable<Room>((suscriber) => {
       try {
-        this.socket.on(this.socket.id, (roomId: string) => {
-          console.log(roomId);
-          suscriber.next(roomId);
+        this.socket.on(this.socket.id, (room: Room) => {
+          suscriber.next(room);
           suscriber.complete();
         });
       } catch (error) {
@@ -53,14 +53,19 @@ export class SocketioService {
     return observable;
   }
 
-  newConnectedOnRoom(room: string): Observable<any> {
-    let observable = new Observable<any>((suscriber) => {
+  ConnectedNewUserInRoom(pseudo: String, roomId: String): void {
+    try {
+      this.socket.emit('joinRoom', { pseudo: pseudo, roomId: roomId });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  listenGameChange(roomId: String) {
+    let observable = new Observable<Room>((suscriber) => {
       try {
-        this.socket.on(room, (data:any) => {
-          console.log(data.roomId);
-          console.log(data.users);
-          suscriber.next({ roomId: data.roomId, users: data.users });
-          suscriber.complete();
+        this.socket.on(`game-${roomId}`, (room: Room) => {
+          suscriber.next(room);
         });
       } catch (error) {
         console.log(error);

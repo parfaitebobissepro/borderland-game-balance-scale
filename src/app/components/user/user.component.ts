@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { User } from 'src/app/models/user';
 
 @Component({
   selector: 'app-user',
@@ -6,5 +7,5 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./user.component.scss']
 })
 export class UserComponent {
-  @Input() winner: boolean = false;
+  @Input() user?: User;
 }

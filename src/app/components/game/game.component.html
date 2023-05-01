@@ -2,11 +2,14 @@
     <app-control-panel></app-control-panel>
     <div class="game-panel">
         <div class="users-container">
-            <app-user [winner]="true"></app-user>
+            <ng-container *ngFor="let user of currentStep?.users">
+                <app-user [user]="user"></app-user>
+            </ng-container>
+
+            <!-- <app-user></app-user>
             <app-user></app-user>
             <app-user></app-user>
-            <app-user></app-user>
-            <app-user></app-user>
+            <app-user></app-user> -->
         </div>
         <div class="current-result">
             <app-response-card [number]="23.04"></app-response-card>

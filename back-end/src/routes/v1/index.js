@@ -1,23 +1,22 @@
 const express = require('express');
 const config = require('../../config/config');
+const roomsRoute = require('./rooms.route');
 
 const router = express.Router();
 
 const defaultRoutes = [{
-    path: '/',
-    route: express.Router()
+    path: '/rooms',
+    route: roomsRoute
         // route: authRoute,
-}, {
-    path: '/auth',
-    route: express.Router()
-        // route: authRoute,
-}, ];
+}];
 
-const devRoutes = [{
-    path: '/docs',
-    route: express.Router()
-        // route: docsRoute,
-}, ];
+const devRoutes = [
+    //     {
+    //   path: '/docs',
+    //   route: express.Router()
+    //   // route: docsRoute,
+    // }, 
+];
 
 defaultRoutes.forEach((route) => {
     router.use(route.path, route.route);

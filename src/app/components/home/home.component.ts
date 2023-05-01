@@ -1,35 +1,29 @@
-import { Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
 import { SocketioService } from 'src/app/services/sockets/socketio.service';
-import { Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { User } from 'src/app/models/user';
+import { RoomsService } from 'src/app/services/rooms/rooms.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
-  name: string = '';
-  form: FormGroup;
+export class HomeComponent implements OnInit {
+  currentUser?: User;
 
-  constructor(private socketService: SocketioService, private router: Router) {
-    this.form = new FormGroup({
-      name: new FormControl('', Validators.required),
-    });
-    this.socketService.setupSocketConnection().subscribe((data)=>{ 
-      this.listenGameCreated() 
-    });
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private router: Router) {
+  }
+
+  ngOnInit(): void {
+    //intialise user
+    this.currentUser = new User();
+    this.currentUser.pseudo = '';
   }
 
   createGameNewGame(): void {
-    this.socketService.createRoom(this.name);
+    this.socketService.createRoom(this.currentUser?.pseudo!);
   }
 
-  listenGameCreated() {
-    this.socketService.connectedToRoom().subscribe((roomId) => {
-      this.router.navigate(['/game', roomId]);
-    });
-  }
 
 }
