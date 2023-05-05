@@ -11,12 +11,11 @@ const createRoom = catchAsync(async(req, res) => {
 });
 const getRooms = catchAsync(async(req, res) => {
     const rooms = await roomService.queryRooms();
-    res.status(httpStatus.CREATED).send(rooms);
+    res.status(httpStatus.OK).send(rooms);
 });
 const getRoom = catchAsync(async(req, res) => {
     const room = await roomService.getRoomByIdRoomId(req.params.roomId);
-    console.log(room.toJSON());
-    res.status(httpStatus.CREATED).send(room);
+    res.status(httpStatus.OK).send(room);
 });
 
 module.exports = {

@@ -8,4 +8,5 @@ import { User } from 'src/app/models/user';
 })
 export class UserComponent {
   @Input() user?: User;
+  @Input() isCurrentUser?: Boolean = false;
 }

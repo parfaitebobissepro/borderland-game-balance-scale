@@ -8,4 +8,5 @@ export class User {
     globalWinner?: boolean = false;
     eliminate: boolean = false;
     admin: boolean = false;
+    closed?: boolean = false; 
 }

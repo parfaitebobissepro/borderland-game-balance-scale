@@ -3,6 +3,8 @@ import { environment } from 'environment';
 import { Observable } from 'rxjs';
 import { io } from 'socket.io-client';
 import { Room } from 'src/app/models/room';
+import { UsersService } from '../users/users.service';
+import { User } from 'src/app/models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -10,8 +12,9 @@ import { Room } from 'src/app/models/room';
 export class SocketioService {
 
   private socket: any;
+  private socketActive: Boolean = false;
 
-  constructor() {
+  constructor(private userService: UsersService) {
 
   }
 
@@ -23,60 +26,109 @@ export class SocketioService {
         suscriber.next(data);
         suscriber.complete();
       });
+
+      this.socketActive = true;
     });
   }
 
-  connectToRoom(room: String) {
-    this.socket.on('my broadcast', (data: String) => {
-      console.log(data);
-    });
+
+  isSocketActive(): Boolean {
+    return this.socketActive;
   }
 
   createRoom(name: String) {
-    try {
+    try { 
       this.socket.emit('createRoom', name);
     } catch (error) {
       console.log(error);
     }
   }
   createAndconnectToRoom(): Observable<Room> {
-    let observable = new Observable<Room>((suscriber) => {
+    let observable$ = new Observable<Room>((suscriber) => {
       try {
         this.socket.on(this.socket.id, (room: Room) => {
+          //add the first user as current player
+          if (room.steps && room.steps[0].users && room.steps[0].users[0]) {
+            this.userService.addCurrentUser(room.steps[0].users[0])
+          }
+
           suscriber.next(room);
-          suscriber.complete();
+          // suscriber.complete();
         });
       } catch (error) {
         console.log(error);
       }
     });
-    return observable;
+    return observable$;
   }
 
   ConnectedNewUserInRoom(pseudo: String, roomId: String): void {
     try {
+      this.listenCurrentUserDatas(pseudo, roomId);
       this.socket.emit('joinRoom', { pseudo: pseudo, roomId: roomId });
     } catch (error) {
       console.log(error);
     }
-  }
-
+  } 
+  respondToStepOfRoom(response: Number, roomId:String, user:User, stepId:String): void {
+    try {
+      this.socket.emit('respondToStep', { response: response, roomId:roomId, userId:user.id,stepId:stepId });
+      // this.socket.emit(`${roomId}-${stepId}`, { response: response, roomId:roomId, userId:userId, stepId:stepId });
+      if(user.admin){
+        this.socket.emit('makeStepGameOfRoom', { roomId:roomId, stepId:stepId });
+      } 
+    } catch (error) {
+      console.log(error);
+    }
+  }  
+   
+  listenCurrentUserDatas(pseudo: String, roomId: String) {
+    this.socket.on(`${roomId}-${pseudo}`, (data: any) => {
+      if (data.type == 'user') {
+        this.userService.addCurrentUser(data.content);
+      }
+    }); 
+  } 
+  
   listenGameChange(roomId: String) {
-    let observable = new Observable<Room>((suscriber) => {
+    let observable = new Observable<Room>((suscriber) => { 
       try {
-        this.socket.on(`game-${roomId}`, (room: Room) => {
-          suscriber.next(room);
+        this.socket.on(`game-${roomId}`, (room: Room) => {   
+          suscriber.next(room); 
+          suscriber.complete(); 
         });
-      } catch (error) {
+      } catch (error) { 
         console.log(error);
       }
     });
     return observable;
+  }
+
+  listenGameLauched(roomId: String) {
+    let observable = new Observable<Boolean>((suscriber) => { 
+      try {
+        this.socket.on(`startGame-${roomId}`, (response: Boolean) => {   
+          suscriber.next(response); 
+        });
+      } catch (error) { 
+        console.log(error);
+      }     
+    });
+    return observable;
+  }
+  launchGame(roomId: String) {
+      try {
+        this.socket.emit('lauchGame',roomId);
+      } catch (error) { 
+        console.log(error);
+      }
   }
 
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
+      this.socketActive = false; 
     }
   }
 }
+  

@@ -20,18 +20,34 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 
     socketIO.getIO().on('connection', (socket) => {
         logger.info('a user connected');
-        socket.on('disconnect', () => {
-            logger.info('user disconnected');
-        });
+        // socket.on('disconnect', () => {
+        //     logger.info('user disconnected');
+        // });
         socket.on('emit_test', (msg) => {
             socketIO.getIO().emit('receive_test', `server: ${msg}`);
         });
 
+        socketController.disconnection({
+            socket: socket,
+            io: socketIO.getIO()
+        });
         socketController.createRoom({
             socket: socket,
             io: socketIO.getIO()
         });
         socketController.joinRoom({
+            socket: socket,
+            io: socketIO.getIO()
+        });
+        socketController.respondToStepOfRoom({
+            socket: socket,
+            io: socketIO.getIO()
+        });
+        socketController.makeStepGameOfRoom({
+            socket: socket,
+            io: socketIO.getIO()
+        });
+        socketController.lauchGame({
             socket: socket,
             io: socketIO.getIO()
         });

@@ -14,7 +14,7 @@ export class AppComponent implements OnInit{
   ngOnInit(): void {
     //active sockects
     this.socketService.setupSocketConnection().subscribe((data) => {
-      this.listenGameCreated()
+      this.listenGameCreated();
     });
       
   }
@@ -24,6 +24,10 @@ export class AppComponent implements OnInit{
       this.roomsService.addCurrentRoom(room);
       this.router.navigate(['/game', room.roomId]);
     });
+  }
+
+  ngOnDestroy() {
+    this.socketService.disconnect();
   }
 
 }

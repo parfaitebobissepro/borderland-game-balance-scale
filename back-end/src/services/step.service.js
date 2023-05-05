@@ -3,12 +3,12 @@ const ApiError = require('../utils/ApiError');
 const Step = require('../models/step.model');
 
 const createStep = async(stepBody) => {
-    return Step.create(stepBody);
+    return await Step.create(stepBody);
 };
 
 
-const getStepById = (stepId) => {
-    return Step.findById(stepId).populate({
+const getStepById = async(stepId) => {
+    return await Step.findById(stepId).populate({
         path: 'users'
     });
 }

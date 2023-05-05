@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const {
+    Schema
+} = mongoose;
 
 const {
     toJSON
@@ -10,7 +12,18 @@ const roomSchema = Schema({
         type: String,
         required: true,
     },
-    steps: [{ type: Schema.Types.ObjectId, ref: 'Step' }]
+    steps: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Step'
+    }],
+    closed: {
+        type: Boolean,
+        default: false
+    },
+    actualServerDate: {
+        type: Date,
+        default: new Date(Date.now())
+    }
 }, {
     timestamps: true,
 });

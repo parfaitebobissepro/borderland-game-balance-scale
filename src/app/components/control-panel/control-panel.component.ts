@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-control-panel',
@@ -8,6 +8,8 @@ import { Component, OnInit } from '@angular/core';
 export class ControlPanelComponent implements OnInit {
   public responseNumbers : Array<Number> = Array.from({length:101},(_,index)=>index++);
   public selectedNumber? : Number;
+  @Output() responseSelected: EventEmitter<Number> = new EventEmitter();
+
 
   public constructor() { }
 
@@ -17,6 +19,7 @@ export class ControlPanelComponent implements OnInit {
 
   selectNumber(number:Number):void{
     this.selectedNumber = number;
+    this.responseSelected?.emit(this.selectedNumber);
   }
 
 }

@@ -18,23 +18,36 @@ const userSchema = Schema({
         type: Number,
         required: false,
         validate(value) {
-            if (value >= 0 && value <= 100) {
+            if (value >= 100 && value <= 0) {
                 throw new Error('Invalid response');
             }
         },
     },
+    currentWinner: {
+        type: Boolean,
+        required: false,
+    },
     globalScore: {
         type: Number,
+        required: false,
+        default: 10
+    },
+    globalWinner: {
+        type: Boolean,
         required: false,
     },
     admin: {
         type: Boolean,
         required: false,
     },
-    winner: {
+    eliminate: {
         type: Boolean,
         required: false,
     },
+    connected: {
+        type: Boolean,
+        required: false,
+    }
 }, {
     timestamps: true,
 });

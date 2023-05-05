@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const {
+    Schema
+} = mongoose;
 const {
     toJSON
 } = require('./plugins');
@@ -16,7 +18,18 @@ const stepSchema = Schema({
         required: true,
         trim: true,
     },
-    users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+    users: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    closed: {
+        type: Boolean,
+        default: false
+    },
+    durationMillisecond: {
+        type: Number,
+        default: 100000
+    }
 }, {
     timestamps: true,
 });

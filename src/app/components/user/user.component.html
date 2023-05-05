@@ -1,10 +1,10 @@
-<div class="user" [ngClass]="{'winner':user?.currentWinner}">
+<div class="user" [ngClass]="{'winner':user?.currentWinner,'current-user':isCurrentUser }">
     <div class="game-label">
         WIN
     </div>
     <div class="sub-container">
         <img src="/assets/images/avatar.jpeg" alt="">
-        <span class="name">{{user?.pseudo}}</span>
+        <span class="name">{{user?.pseudo}} {{user?.globalScore}}</span>
         <app-response-card [number]="user?.currentResponse"></app-response-card>
     </div>
 </div>

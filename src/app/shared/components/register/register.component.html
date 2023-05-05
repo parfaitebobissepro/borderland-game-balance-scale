@@ -1,5 +1,6 @@
 <form action="" #loginForm="ngForm">
-    <input type="text" [(ngModel)]="currentUser!.pseudo" name="pseudo" #pseudo="ngModel" required="true">
+    <input type="text" [(ngModel)]="currentUser!.pseudo" name="pseudo" #pseudo="ngModel" required="true" (ngModelChange)="checkPseudoValidity()">
     <span class="error" *ngIf="pseudo.touched">{{ pseudo.errors && pseudo.errors['required'] ? 'le pseudo est obligatoire' : ''}}</span>
-    <button [disabled]="loginForm.invalid" (click)="ConnectedNewUserInRoom()">Créer une partie</button>
+    <span class="error" *ngIf="!pseudo.pristine">{{ isPseudoAlreadyExistOnGame ? 'le pseudo est déjà utiliser dans ce jeu' : ''}}</span>
+    <button [disabled]="loginForm.invalid || isPseudoAlreadyExistOnGame" (click)="ConnectedNewUserInRoom()">Rejoindre</button>
 </form>

@@ -10,6 +10,9 @@
         border: 2px solid white;
         margin-bottom: 10px;
     }
+    &.current-user img {
+        filter: grayscale(1);
+    }
     .game-label {
         font-size: 2rem;
         color: #FFF;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { SocketioService } from 'src/app/services/sockets/socketio.service';
 import { Router } from '@angular/router';
 import { User } from 'src/app/models/user';
@@ -19,6 +19,7 @@ export class HomeComponent implements OnInit {
     //intialise user
     this.currentUser = new User();
     this.currentUser.pseudo = '';
+
   }
 
   createGameNewGame(): void {

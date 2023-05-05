@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from 'src/app/models/user';
 import { LocalService } from '../shared/local.service';
 
@@ -8,18 +8,23 @@ import { LocalService } from '../shared/local.service';
 })
 export class UsersService {
 
-  currentUserubject$$ = new Subject<User>();
+  currentUserSubject$$ = new BehaviorSubject<User>({} as User);
   currentUserKey = 'currentUser';
 
   constructor(private localService: LocalService) { }
 
   addCurrentUser(user: User): void {
-    this.currentUserubject$$.next(user);
+    this.currentUserSubject$$.next(user);
     //store in local storage
     this.localService.saveData(this.currentUserKey,JSON.stringify(user));
   }
 
   getCurrentUser(): Observable<User> {
-    return this.currentUserubject$$;
+    return this.currentUserSubject$$;
+  }
+
+  getCurrentUserFromLocale():User{
+    let userStringify = this.localService.getData(this.currentUserKey);
+    return userStringify != "" ? JSON.parse(userStringify) : null;
   }
 }

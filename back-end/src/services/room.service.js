@@ -19,12 +19,12 @@ const getRoomById = async(id) => {
     });
 }
 const getRoomByIdRoomId = async(roomId) => {
-    const room = await Room.findOne({ roomId: roomId })
+    let room = await Room.findOne({ roomId: roomId })
         .populate({
             path: 'steps',
             populate: { path: 'users' }
         });
-
+    room.actualServerDate = new Date(Date.now());
     return room;
 }
 const updateRoomById = async(roomId, updateBody) => {
