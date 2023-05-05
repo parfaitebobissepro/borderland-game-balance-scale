@@ -12,6 +12,7 @@
         </div>
 
         <div>
+            <!-- <app-timer *ngIf="timerDate" (counterEnd)="counterEnd()" [nmbrMilliSecond]="nmbrMilliSecond" [scheduler]="1000" [date]="timerDate"></app-timer> -->
             <app-timer *ngIf="timerDate" (counterEnd)="counterEnd()" [nmbrMilliSecond]="nmbrMilliSecond" [scheduler]="1000" [date]="timerDate"></app-timer>
         </div>
         <button (click)="lauchGame()" *ngIf="currentUser?.admin && currentStep?.rang == 0 && currentStep?.users?.length! >=2">Lauch Game</button>

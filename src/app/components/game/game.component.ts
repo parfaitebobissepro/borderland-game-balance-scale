@@ -25,8 +25,8 @@ export class GameComponent implements OnInit {
   //others variables
   public roomId: string = '';
   public timerDate?: Date;
-  public nmbrMilliSecond: number = 10000;
-  public timeInterStep: number = 10000;
+  public nmbrMilliSecond: number = 0;
+  public timeInterStep: number = 5000;
   public timeInterAwaitResponseServer: number = 2000;
   public responseTosend?: Number;
   public gameOver: Boolean = false;
@@ -187,7 +187,7 @@ export class GameComponent implements OnInit {
   counterEnd(): void {
     console.log('counter End');
     this.sendCurrentResponse();
-  }
+  } 
 
   activeTimerByDate(date: Date, nmbrMilliSecond: number): void {
     this.timerDate = date;
@@ -217,14 +217,10 @@ export class GameComponent implements OnInit {
 
   lauchGame(): void {
     this.socketService.launchGame(this.roomId);
-  }
+  }  
 
   retrieveTime(): void {
-    console.log('actualServerDate',new Date(this.currentRoom!.actualServerDate!).getTime());
-    console.log('startDate',new Date(this.currentStep?.startDate!).getTime());
-    console.log('durationMillisecond',this.currentStep?.durationMillisecond!);
-
-    const ADITIONNAL_WAITING_TIME = (this.timeInterAwaitResponseServer + this.timeInterStep) * this.currentStep?.rang!;
+    const ADITIONNAL_WAITING_TIME = (this.timeInterAwaitResponseServer + this.timeInterStep);
     
     //Retreive the timer
     this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), this.currentStep?.durationMillisecond! - (new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime()) + ADITIONNAL_WAITING_TIME);
@@ -232,7 +228,7 @@ export class GameComponent implements OnInit {
 
   ngOnDestroy() {  
     this.subscription.unsubscribe();
-  }
+  } 
 }
 
 

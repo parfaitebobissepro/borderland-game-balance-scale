@@ -24,15 +24,15 @@ export class TimerComponent implements OnInit {
   }
   decrease() {
     //active the timer at some [scheduler] interval for only number of seconds steps [nmberSecond]
-    this.subscription = interval(this.scheduler).pipe(take((this.nmbrMilliSecond! / 1000) + 1))
+    this.subscription = interval(this.scheduler).pipe(take(Math.floor(this.nmbrMilliSecond! / 1000) + 1))
       .subscribe(
-        x => {
+        (x)=> { 
           this.timeDifference = new Date(this.targetTime!.getTime() - this.actualTime!.getTime() - (x * 1000));
           //if counter over, emit counterEnd Event. counter end when interval x is equal to seconds
-          if (x === ((this.nmbrMilliSecond! / 1000))) {
+          if (x === (Math.floor(this.nmbrMilliSecond! / 1000))) {
             this.counterEnd.emit();
           }
-        }
+        } 
       );
   }
 

@@ -28,7 +28,7 @@ const stepSchema = Schema({
     },
     durationMillisecond: {
         type: Number,
-        default: 100000
+        default: 60000
     }
 }, {
     timestamps: true,

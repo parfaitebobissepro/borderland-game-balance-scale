@@ -30,8 +30,10 @@ async function addUserAsConnected(socketId, userId) {
 async function removeUserConnected(socketId) {
     // const index = findUserIndex(userId);
     // usersConnected.splice(index, 1);
-    await updateUserById(usersConnected[socketId], { connected: false });
-    delete usersConnected[socketId];
+
+    //TODO: Resolv the problem to remove an user as connected; usersConnected[socketId] return [undefined] check it after please; ********* IMPORTANT *******
+    // await updateUserById(usersConnected[socketId], { connected: false });
+    // delete usersConnected[socketId];
 }
 
 // function findUserIndex(socketId) {
