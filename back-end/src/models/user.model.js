@@ -27,6 +27,10 @@ const userSchema = Schema({
         type: Boolean,
         required: false,
     },
+    sameCurrentResponse: {
+        type: Boolean,
+        required: false,
+    },
     globalScore: {
         type: Number,
         required: false,
@@ -40,11 +44,15 @@ const userSchema = Schema({
         type: Boolean,
         required: false,
     },
-    eliminate: {
+    // eliminate: {
+    //     type: Boolean,
+    //     required: false,
+    // },
+    connected: {
         type: Boolean,
         required: false,
     },
-    connected: {
+    exactlyNumberFound: {
         type: Boolean,
         required: false,
     }
@@ -54,6 +62,10 @@ const userSchema = Schema({
 
 // add plugin that converts mongoose to json
 userSchema.plugin(toJSON);
+
+userSchema.virtual('eliminate').get(function() {
+    return this.globalScore <= 0;
+});
 
 const User = mongoose.model('User', userSchema);
 

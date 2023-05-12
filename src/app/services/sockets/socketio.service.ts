@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { Room } from 'src/app/models/room';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/app/models/user';
+import { ServerParams } from 'src/app/models/server-params';
 
 @Injectable({
   providedIn: 'root'
@@ -18,15 +19,14 @@ export class SocketioService {
 
   }
 
-  setupSocketConnection(): Observable<String> {
-    return new Observable<String>((suscriber) => {
+  setupSocketConnection(): Observable<ServerParams> {
+    return new Observable<ServerParams>((suscriber) => {
       this.socket = io(environment.SOCKET_ENDPOINT);
-      this.socket.emit('emit_test', 'Hello there from Angular.');
-      this.socket.on('receive_test', (data: String) => {
+      this.socket.emit('getParamsOfServer', 'Hello there from Angular.');
+      this.socket.on('serverParams', (data:ServerParams) => {
         suscriber.next(data);
         suscriber.complete();
       });
-
       this.socketActive = true;
     });
   }
@@ -51,9 +51,7 @@ export class SocketioService {
           if (room.steps && room.steps[0].users && room.steps[0].users[0]) {
             this.userService.addCurrentUser(room.steps[0].users[0])
           }
-
           suscriber.next(room);
-          // suscriber.complete();
         });
       } catch (error) {
         console.log(error);
@@ -73,7 +71,6 @@ export class SocketioService {
   respondToStepOfRoom(response: Number, roomId:String, user:User, stepId:String): void {
     try {
       this.socket.emit('respondToStep', { response: response, roomId:roomId, userId:user.id,stepId:stepId });
-      // this.socket.emit(`${roomId}-${stepId}`, { response: response, roomId:roomId, userId:userId, stepId:stepId });
       if(user.admin){
         this.socket.emit('makeStepGameOfRoom', { roomId:roomId, stepId:stepId });
       } 
@@ -119,6 +116,13 @@ export class SocketioService {
   launchGame(roomId: String) {
       try {
         this.socket.emit('lauchGame',roomId);
+      } catch (error) { 
+        console.log(error);
+      }
+  }
+  addNewConnectedGame(userId: String, roomId:String) {
+      try {
+        this.socket.emit('addNewConnectedGame',{userId:userId,roomId:roomId});
       } catch (error) { 
         console.log(error);
       }

@@ -3,8 +3,14 @@
         WIN
     </div>
     <div class="sub-container">
-        <img src="/assets/images/avatar.jpeg" alt="">
-        <span class="name">{{user?.pseudo}} {{user?.globalScore}}</span>
+
+        <div class="conainer-avatar">
+            <div id="circle" *ngIf="user?.connected">
+            </div>
+            <img src="/assets/images/avatar.jpeg" alt="">
+        </div>
+        <span class="name">{{ user?.pseudo }} {{ user?.globalScore }}
+      {{ user?.admin?'admin' : '' }}</span>
         <app-response-card [number]="user?.currentResponse"></app-response-card>
     </div>
 </div>

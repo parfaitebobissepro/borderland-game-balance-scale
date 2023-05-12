@@ -7,6 +7,7 @@ const {
 } = require('../services');
 
 const SEL = 0.8;
+const GLOBALSCORE_MAX = 10;
 
 
 const userConnected = (user) => user.currentResponse != null;
@@ -15,55 +16,112 @@ const getStepWinner = async(stepId) => {
     let step = await stepService.getStepById(stepId);
     step = step.toJSON();
 
-    //get array of responses
-    let responsesArray = [];
-    step.users.forEach((user) => responsesArray.push(user.currentResponse));
+    //remove some users than can't be count for the step
+    step.users = step.users.filter((user) => user.globalScore > 0);
 
-    //get average rounded
-    let average = Math.round(getAverage(responsesArray));
+
 
     //get user most near to average
-    let min = 100;
-    let userStepwinner = 100;
+    const MAX = 100;
+    let min = MAX;
+    let userStepwinner = MAX;
     let isExactlyTargetNumber = false;
 
+    var usersWithSameResponses = [];
+
+
+
     //TODO: check number of participats before assign winner with right rule
-    //TODO: if 2 participants
-    //TODO: if 3 participants
+    if (step.users.length <= 2) {
+        //TODO: if we have 2 participants
+        let userWithResponseZero = step.users.find((user) => user.currentResponse == 0);
 
-    //TODO: more than 3 participants
-    step.users.forEach((user) => {
-        const diff = Math.abs(user.currentResponse - (average * SEL));
-        if (diff == 0) {
-            min = diff;
-            isExactlyTargetNumber = true;
-            userStepwinner = user;
-        } else if (diff < min) {
-            min = diff;
-            userStepwinner = user;
+        if (userWithResponseZero) {
+            let otherUser = step.users.find((user) => user.currentResponse == MAX);
+            if (otherUser) {
+                //user with 0 response is loser 
+                userWithResponseZero.globalScore--;
+                await userService.updateUserById(userWithResponseZero.id, userWithResponseZero);
+
+                //other user is winner
+                otherUser.currentWinner = true;
+                await userService.updateUserById(otherUser.id, otherUser);
+
+                //return game result
+                return {
+                    userStepwinner: otherUser
+                }
+            }
         }
-    });
 
-
-    step.users.map(async(user) => {
-        if (user.id != userStepwinner.id) {
-            user.globalScore--;
-            await userService.updateUserById(user.id, user);
-        } else {
-            user.currentWinner = true;
-            await userService.updateUserById(user.id, user);
-        }
-    });
-
-
-
-
-
-
-    return {
-        userStepwinner: userStepwinner,
-        isExactlyTargetNumber: isExactlyTargetNumber,
     }
+
+    if (step.users.length <= 4) {
+        //TODO: if we have 3 participants
+
+        //decrement globalScore of users
+        for (let user of step.users) {
+            let userWithSameResponse = step.users.find((element) => element.currentResponse == user.currentResponse && element.id != user.id);
+            if (userWithSameResponse) {
+                user.sameCurrentResponse = true;
+                user.globalScore--;
+                await userService.updateUserById(user.id, user);
+                usersWithSameResponses.push(user);
+            }
+        }
+
+        //remove users with same Responses
+        usersWithSameResponses = usersWithSameResponses.map((userWithSameResponses) => userWithSameResponses = userWithSameResponses.id);
+        step.users = step.users.filter((user) => !usersWithSameResponses.includes(user.id));
+    }
+
+
+    if (step.users.length > 0) {
+        //get array of responses
+        let responsesArray = [];
+        step.users.forEach((user) => responsesArray.push(user.currentResponse));
+
+        //get average rounded
+        let average = getAverage(responsesArray);
+
+        if (step.users)
+            step.users.forEach((user) => {
+                const diff = Math.abs(user.currentResponse - Math.round((average * SEL)));
+                if (diff == 0) {
+                    min = diff;
+                    isExactlyTargetNumber = true;
+                    userStepwinner = user;
+                } else if (diff < min) {
+                    min = diff;
+                    userStepwinner = user;
+                }
+            });
+
+
+
+        step.users.map(async(user) => {
+            if (user.id != userStepwinner.id) {
+                user.globalScore = isExactlyTargetNumber && step.users.length <= 3 ? user.globalScore - 2 : user.globalScore - 1;
+                await userService.updateUserById(user.id, user);
+            } else {
+                user.currentWinner = true;
+                user.exactlyNumberFound = isExactlyTargetNumber;
+                await userService.updateUserById(user.id, user);
+            }
+        });
+
+        return {
+            userStepwinner: userStepwinner,
+            isExactlyTargetNumber: isExactlyTargetNumber,
+        }
+    } else {
+        return {
+            userStepwinner: null,
+            isExactlyTargetNumber: null,
+        }
+    }
+
+
 
 };
 
@@ -76,7 +134,11 @@ const getAverage = (arrayResponses) => {
 }
 
 const clearDataUser = async(userId) => {
-    await userService.updateUserById(userId, { currentResponse: null, currentWinner: false });
+    await userService.updateUserById(userId, {
+        currentResponse: null,
+        currentWinner: false,
+        exactlyNumberFound: false,
+    });
 };
 const closeStep = async(step) => {
     step.closed = true;
@@ -97,19 +159,9 @@ const makeGameStepRules = async(stepId) => {
             //TODO:if all users connected have given response their responses
             // make game & respond
             await getStepWinner(stepId);
-            // //clear current data of users
-            // step.users.forEach(user => {
-            //     clearDataUser(user);
-            // });
-
-            // //close the step
-            // closeStep(stepId);
 
         } else {
             //TODO:else if some of all users connected or not dont give response
-            //if start Step pass timer + 1 second
-            // if (new Date(Date.now() + 1000) >= step.startDate) {
-            //Assign Radom response
 
             //get users without response in BD
             let newStepFromBD = await stepService.getStepById(stepId);
@@ -125,35 +177,16 @@ const makeGameStepRules = async(stepId) => {
 
             // make game & respond
             await getStepWinner(stepId);
-
-            // //clear current data of users
-            // step.users.forEach(user => {
-            //     clearDataUser(user);
-            // });
-
-            // //close the step
-            // closeStep(stepId);
-            // }
-
         }
 
 
     }
-
-
-
-
-    //Assign random responses for all non connected
-
-
-
-
-    //emit even with response
-
 };
 
 module.exports = {
     makeGameStepRules,
     clearDataUser,
-    closeStep
+    closeStep,
+    SEL,
+    GLOBALSCORE_MAX
 }

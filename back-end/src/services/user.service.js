@@ -22,18 +22,20 @@ const updateUserById = async(userId, updateBody) => {
     return user;
 }
 
-async function addUserAsConnected(socketId, userId) {
+async function addUserAsConnected(socketId, userId, roomId) {
     await updateUserById(userId, { connected: true });
-    usersConnected[socketId] = userId;
+    usersConnected[socketId] = userId + ' ' + roomId;
 }
 
-async function removeUserConnected(socketId) {
-    // const index = findUserIndex(userId);
-    // usersConnected.splice(index, 1);
-
-    //TODO: Resolv the problem to remove an user as connected; usersConnected[socketId] return [undefined] check it after please; ********* IMPORTANT *******
-    // await updateUserById(usersConnected[socketId], { connected: false });
-    // delete usersConnected[socketId];
+async function removeUserAsConnected(socketId) {
+    let userIdFound = usersConnected[socketId].split(' ')[0];
+    await updateUserById(userIdFound, { connected: false });
+    delete usersConnected[socketId];
+}
+async function removeUserAsAdmin(socketId) {
+    let userIdFound = usersConnected[socketId].split(' ')[0];
+    await updateUserById(userIdFound, { admin: false });
+    delete usersConnected[socketId];
 }
 
 // function findUserIndex(socketId) {
@@ -46,9 +48,10 @@ function isUserWithSocket(socketId) {
 }
 
 function getUserWithSocket(socketId) {
-    // return usersConnected.findIndex((id) => userId == id);
-
-    return usersConnected[socketId];
+    let userId = usersConnected[socketId];
+    if (userId && userId.split(' ').length > 0) {
+        return userId.split(' ')[0];
+    }
 }
 
 
@@ -57,9 +60,11 @@ module.exports = {
     createUser,
     getUserById,
     // findUserIndex,
-    removeUserConnected,
+    removeUserAsConnected,
     addUserAsConnected,
     isUserWithSocket,
     getUserWithSocket,
-    updateUserById
+    updateUserById,
+    removeUserAsAdmin,
+    usersConnected
 }

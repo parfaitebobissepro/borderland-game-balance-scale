@@ -1,4 +1,3 @@
-const httpStatus = require('http-status');
 const UtilFunctions = require('../utils/functions');
 const logger = require('../config/logger');
 const {
@@ -8,6 +7,20 @@ const {
 } = require('../services');
 const gameController = require('./game.controller');
 
+const TIMEOUT_AWAITING_USERS_RESPONES = 2000;
+
+const getParamsOfServer = ({
+    socket,
+    io
+} = {}) => {
+    socket.on('getParamsOfServer', async(msg) => {
+        io.emit('serverParams', {
+            timeInterAwaitResponseServer: TIMEOUT_AWAITING_USERS_RESPONES,
+            sel: gameController.SEL,
+            globalScoreMax: gameController.GLOBALSCORE_MAX
+        });
+    });
+};
 const createRoom = ({
     socket,
     io
@@ -36,7 +49,7 @@ const createRoom = ({
             io.emit(socket.id, room.toJSON());
 
             //add user as user connected
-            await userService.addUserAsConnected(socket.id, user.id);
+            await userService.addUserAsConnected(socket.id, user.id, room.id);
         }
     });
 };
@@ -70,6 +83,8 @@ const joinRoom = ({
 
             if (room.steps.length > 1) {
                 /// The game always started, the current user can't join the channel
+
+                //add user as user connected
             } else {
                 // recover the last step of the room
                 let currentStep = room.steps[room.steps.length - 1];
@@ -78,7 +93,7 @@ const joinRoom = ({
                 currentStep.users.push(user.toJSON());
 
                 //add user as user connected
-                await userService.addUserAsConnected(socket.id, user.id);
+                await userService.addUserAsConnected(socket.id, user.id, room.id);
 
                 // clone current step object to avoid modifiying the original
                 const updatedStep = {
@@ -141,6 +156,17 @@ const lauchGame = ({
     })
 };
 
+const addNewConnectedGame = ({
+    io,
+    socket
+} = {}) => {
+    socket.on('addNewConnectedGame', async(
+        data
+    ) => {
+        await userService.addUserAsConnected(socket.id, data.userId, data.roomId);
+    })
+};
+
 
 const makeStepGameOfRoom = ({
     io,
@@ -151,58 +177,17 @@ const makeStepGameOfRoom = ({
     ) => {
         //On attend maximum 02 seconde la réponse des utilisateurs
         setTimeout(async() => {
-            //get datas
 
-            // let userId = data.userId;
+            //get room datas
             let roomId = data.roomId;
-            let response = data.response;
-            // let stepId = data.stepId;
 
-            //get models
-            // let user = await userService.getUserByI(userId);
+            //get room model and last step
             let room = await roomService.getRoomByIdRoomId(roomId);
             let lastStep = room.steps[room.steps.length - 1];
             lastStep = lastStep.toJSON();
 
-            //room
-
             //check if room not closed
             if (!room.closed) {
-
-                /**************    STRAT PROCESS TO SEE AFTER     ****************** */
-
-                //check if step always exist
-                // if (!lastStep.closed) {
-                //     //if step always exist : add user response
-                //     let currentUserIndex = lastStep.users.findIndex((user) => user.id == userId);
-                //     if (currentUserIndex != -1) {
-                //         lastStep.users[currentUserIndex].currentResponse = response;
-
-                //         //Update the currentUser
-                //         await userService.updateUserById(lastStep.users[currentUserIndex].id, lastStep.users[currentUserIndex]);
-
-                //         //update users for step game, data are directly updated in BD
-                //         await gameController.makeGameStepRules(lastStep.id);
-
-
-                //         //send back informations of game
-                //         let roomUpdated = await roomService.getRoomByIdRoomId(room.roomId);
-                //         roomUpdated = roomUpdated.toJSON();
-                //         io.emit(`game-${room.roomId}`, roomUpdated);
-
-                //         //clear current data of users
-                //         lastStep.users.forEach(user => {
-                //             gameController.clearDataUser(user);
-                //         });
-
-                //         //close the step
-                //         gameController.closeStep(lastStep);
-                //     }
-                // } else {
-
-                /**************    END PROCESS TO SEE AFTER     ****************** */
-
-
                 //else create new step and add user response
                 let users = await Promise.all(lastStep.users.map(async(user) => {
                     const userUpdated = {
@@ -234,6 +219,7 @@ const makeStepGameOfRoom = ({
                 //update date of room
                 roomUpdated.actualServerDate = new Date(Date.now());
 
+                //send back datas of room
                 io.emit(`game-${room.roomId}`, roomUpdated);
 
 
@@ -246,10 +232,8 @@ const makeStepGameOfRoom = ({
 
                 //close the step
                 gameController.closeStep(newStep);
-
-                // }
             }
-        }, 2000);
+        }, TIMEOUT_AWAITING_USERS_RESPONES);
     });
 };
 
@@ -259,15 +243,72 @@ const disconnection = ({
     socket
 } = {}) => {
     socket.on('disconnect', async() => {
-        let userId = userService.getUserWithSocket(socket.id);
+        const userId = userService.getUserWithSocket(socket.id);
+
         if (userId) {
-            logger.info('user disconnected ', userId);
-            await userService.removeUserConnected(userId);
+
+            //remover user as admin
+            const user = await userService.getUserById(userId);
+
+            if (user.admin == true) {
+
+                //if admin, remove for him admin access
+                let SocketIdObject = findEntrieInConnectedSocketUsers(userService.usersConnected, userId);
+                if (SocketIdObject) {
+                    await userService.removeUserAsAdmin(SocketIdObject.key);
+                }
+
+                //find new admin
+                SocketIdObject = findAnyInConnectedSocketUsers(userService.usersConnected);
+                let userIdFound, roomIdFound;
+                if (SocketIdObject) {
+                    userIdFound = SocketIdObject.value.split(' ')[0];
+                    roomIdFound = SocketIdObject.value.split(' ')[1];
+                }
+
+                //assign access to new admin
+                if (userIdFound) {
+                    await userService.updateUserById(userIdFound, {
+                        admin: true
+                    });
+                }
+
+                //send back informations of game
+                if (roomIdFound) {
+                    let roomUpdated = await roomService.getRoomById(roomIdFound);
+                    roomUpdated = roomUpdated.toJSON();
+                    io.emit(`game-${roomUpdated.roomId}`, roomUpdated);
+                }
+
+                logger.info('user disconnected ');
+            }
+
         }
-
-
     });
 };
+
+
+const findEntrieInConnectedSocketUsers = (object, valueToFind) => {
+    for (const [key, value] of Object.entries(object)) {
+        if (value.split(' ')[0] == valueToFind) {
+            return {
+                key: key,
+                value: value
+            };
+        }
+    }
+}
+const findAnyInConnectedSocketUsers = (object) => {
+    for (const [key, value] of Object.entries(object)) {
+        if (value.split(' ')[0]) {
+            return {
+                key: key,
+                value: value
+            };
+        }
+    }
+}
+
 
 
 
@@ -279,5 +320,7 @@ module.exports = {
     respondToStepOfRoom,
     disconnection,
     makeStepGameOfRoom,
-    lauchGame
+    lauchGame,
+    addNewConnectedGame,
+    getParamsOfServer
 };

@@ -20,11 +20,10 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 
     socketIO.getIO().on('connection', (socket) => {
         logger.info('a user connected');
-        // socket.on('disconnect', () => {
-        //     logger.info('user disconnected');
-        // });
-        socket.on('emit_test', (msg) => {
-            socketIO.getIO().emit('receive_test', `server: ${msg}`);
+
+        socketController.getParamsOfServer({
+            socket: socket,
+            io: socketIO.getIO()
         });
 
         socketController.disconnection({
@@ -48,6 +47,10 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
             io: socketIO.getIO()
         });
         socketController.lauchGame({
+            socket: socket,
+            io: socketIO.getIO()
+        });
+        socketController.addNewConnectedGame({
             socket: socket,
             io: socketIO.getIO()
         });

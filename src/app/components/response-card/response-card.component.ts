@@ -6,5 +6,5 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./response-card.component.scss']
 })
 export class ResponseCardComponent {
-  @Input() number?: Number = 100;
+  @Input() number?: number = 100;
 }

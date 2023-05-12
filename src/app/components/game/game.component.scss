@@ -17,4 +17,21 @@
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    .operation {
+        color: white;
+    }
+    .operation,
+    .sel {
+        font-size: 2rem;
+        line-height: 2rem;
+    }
+    .sel {
+        color: red;
+    }
+    .operation.multiplication {
+        font-size: 1.5rem;
+    }
 }

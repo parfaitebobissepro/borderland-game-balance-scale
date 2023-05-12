@@ -1,8 +1,6 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const Room = require('../models/room.model');
-const Step = require('../models/step.model');
-const User = require('../models/user.model');
 
 const createRoom = (roomBody) => {
     return Room.create(roomBody);
@@ -19,12 +17,18 @@ const getRoomById = async(id) => {
     });
 }
 const getRoomByIdRoomId = async(roomId) => {
-    let room = await Room.findOne({ roomId: roomId })
+    let room = await Room.findOne({
+            roomId: roomId
+        })
         .populate({
             path: 'steps',
-            populate: { path: 'users' }
+            populate: {
+                path: 'users'
+            }
         });
-    room.actualServerDate = new Date(Date.now());
+    if (room) {
+        room.actualServerDate = new Date(Date.now());
+    }
     return room;
 }
 const updateRoomById = async(roomId, updateBody) => {

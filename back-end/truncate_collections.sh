@@ -4,4 +4,5 @@ use balance-scale
 db.users.deleteMany({})
 db.steps.deleteMany({})
 db.rooms.deleteMany({})
+exit
 EOF

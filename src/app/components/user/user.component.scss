@@ -41,4 +41,18 @@
     &.winner .sub-container {
         border-color: rgb(158, 6, 6);
     }
+    #circle {
+        background: green;
+        border-radius: 50%;
+        width: 15px;
+        height: 15px;
+        border: 2px solid white;
+        position: absolute;
+        right: -5px;
+        top: 5px;
+        z-index: 3;
+    }
+    .conainer-avatar {
+        position: relative;
+    }
 }

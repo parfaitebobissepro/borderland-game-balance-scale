@@ -1,13 +1,16 @@
 const express = require('express');
 const config = require('../../config/config');
 const roomsRoute = require('./rooms.route');
+const usersRoute = require('./users.route');
 
 const router = express.Router();
 
 const defaultRoutes = [{
     path: '/rooms',
     route: roomsRoute
-        // route: authRoute,
+}, {
+    path: '/users',
+    route: usersRoute
 }];
 
 const devRoutes = [
