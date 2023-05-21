@@ -51,6 +51,7 @@ const userSchema = Schema({
     connected: {
         type: Boolean,
         required: false,
+        default: true,
     },
     exactlyNumberFound: {
         type: Boolean,

@@ -10,9 +10,12 @@
         <div class="current-result">
             <app-response-card [number]="currentAverage"></app-response-card>
             <span class="operation multiplication">X</span>
-            <span class="sel">{{serverParams?.sel}}</span>
+            <span class="sel" *ngIf="serverParams && serverParams!.sel">{{serverParams.sel}}</span>
             <span class="operation">=</span>
-            <app-response-card [number]="currentAverage * serverParams!.sel"></app-response-card>
+            <ng-container *ngIf="serverParams && serverParams!.sel">
+                <app-response-card [number]="currentAverage * serverParams.sel"></app-response-card>
+            </ng-container>
+
         </div>
 
         <div>

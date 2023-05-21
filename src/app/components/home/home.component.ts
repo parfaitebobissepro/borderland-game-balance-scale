@@ -26,5 +26,19 @@ export class HomeComponent implements OnInit {
     this.socketService.createRoom(this.currentUser?.pseudo!);
   }
 
+  // Image Preview
+  showPreview(event:any) {
+    const file = event!.target!.files[0];
+
+    // File Preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.currentUser!.image = reader.result as string;
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Sub
+
 
 }

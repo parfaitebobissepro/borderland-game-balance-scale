@@ -6,6 +6,7 @@ import { Room } from 'src/app/models/room';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/app/models/user';
 import { ServerParams } from 'src/app/models/server-params';
+import { RoomsService } from '../rooms/rooms.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class SocketioService {
   private socket: any;
   private socketActive: Boolean = false;
 
-  constructor(private userService: UsersService) {
+  constructor(private userService: UsersService, private roomsService: RoomsService) {
 
   }
 
@@ -23,7 +24,7 @@ export class SocketioService {
     return new Observable<ServerParams>((suscriber) => {
       this.socket = io(environment.SOCKET_ENDPOINT);
       this.socket.emit('getParamsOfServer', 'Hello there from Angular.');
-      this.socket.on('serverParams', (data:ServerParams) => {
+      this.socket.on('serverParams', (data: ServerParams) => {
         suscriber.next(data);
         suscriber.complete();
       });
@@ -37,7 +38,7 @@ export class SocketioService {
   }
 
   createRoom(name: String) {
-    try { 
+    try {
       this.socket.emit('createRoom', name);
     } catch (error) {
       console.log(error);
@@ -67,34 +68,33 @@ export class SocketioService {
     } catch (error) {
       console.log(error);
     }
-  } 
-  respondToStepOfRoom(response: Number, roomId:String, user:User, stepId:String): void {
+  }
+  respondToStepOfRoom(response: Number, roomId: String, user: User, stepId: String): void {
     try {
-      this.socket.emit('respondToStep', { response: response, roomId:roomId, userId:user.id,stepId:stepId });
-      if(user.admin){
-        this.socket.emit('makeStepGameOfRoom', { roomId:roomId, stepId:stepId });
-      } 
+      this.socket.emit('respondToStep', { response: response, roomId: roomId, userId: user.id, stepId: stepId });
+      if (user.admin) {
+        this.socket.emit('makeStepGameOfRoom', { roomId: roomId, stepId: stepId });
+      }
     } catch (error) {
       console.log(error);
     }
-  }  
-   
+  }
+
   listenCurrentUserDatas(pseudo: String, roomId: String) {
     this.socket.on(`${roomId}-${pseudo}`, (data: any) => {
       if (data.type == 'user') {
         this.userService.addCurrentUser(data.content);
       }
-    }); 
-  } 
-  
+    });
+  }
+
   listenGameChange(roomId: String) {
-    let observable = new Observable<Room>((suscriber) => { 
+    let observable = new Observable<Room>((suscriber) => {
       try {
-        this.socket.on(`game-${roomId}`, (room: Room) => {   
-          suscriber.next(room); 
-          suscriber.complete(); 
+        this.socket.on(`game-${roomId}`, (room: Room) => {
+          suscriber.next(room);
         });
-      } catch (error) { 
+      } catch (error) {
         console.log(error);
       }
     });
@@ -102,37 +102,49 @@ export class SocketioService {
   }
 
   listenGameLauched(roomId: String) {
-    let observable = new Observable<Boolean>((suscriber) => { 
+    let observable = new Observable<Boolean>((suscriber) => {
       try {
-        this.socket.on(`startGame-${roomId}`, (response: Boolean) => {   
-          suscriber.next(response); 
+        this.socket.on(`startGame-${roomId}`, (response: Boolean) => {
+          suscriber.next(response);
         });
-      } catch (error) { 
+      } catch (error) {
         console.log(error);
-      }     
+      }
     });
     return observable;
   }
   launchGame(roomId: String) {
-      try {
-        this.socket.emit('lauchGame',roomId);
-      } catch (error) { 
-        console.log(error);
-      }
+    try {
+      this.socket.emit('lauchGame', roomId);
+    } catch (error) {
+      console.log(error);
+    }
   }
-  addNewConnectedGame(userId: String, roomId:String) {
-      try {
-        this.socket.emit('addNewConnectedGame',{userId:userId,roomId:roomId});
-      } catch (error) { 
+  listenUsersChange(id: String) {
+    let observable = new Observable<any>((suscriber) => {
+      try { 
+        this.socket.on(`update-user-${id}`, (data: any) => {
+          suscriber.next(data);
+          console.log(data);
+        });
+      } catch (error) {
         console.log(error);
       }
+    });
+    return observable;
+  }
+  addNewConnectedGame(userId: String, roomId: String) {
+    try {
+      this.socket.emit('addNewConnectedGame', { userId: userId, roomId: roomId });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
-      this.socketActive = false; 
+      this.socketActive = false;
     }
   }
 }
-  

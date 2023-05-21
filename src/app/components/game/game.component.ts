@@ -6,7 +6,7 @@ import { Step } from 'src/app/models/step';
 import { RoomsService } from 'src/app/services/rooms/rooms.service';
 import { SocketioService } from 'src/app/services/sockets/socketio.service';
 import { RegisterComponent } from 'src/app/shared/components/register/register.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { UsersService } from 'src/app/services/users/users.service';
 import { User } from 'src/app/models/user';
 import { ServerParams } from 'src/app/models/server-params';
@@ -45,6 +45,7 @@ export class GameComponent implements OnInit {
   public getUpdatedRoom$$: Observable<Room> = new Observable();
   public getListenGameStart$$: Observable<Boolean> = new Observable();
   public getRemoteUser$$: Observable<User> = new Observable();
+  public getListeUsersChange$$: Observable<User> = new Observable();
 
   //Subscriptions
   public currentServeParamsSubscription$?: Subscription;
@@ -54,6 +55,7 @@ export class GameComponent implements OnInit {
   public getCurrentUserSubscription$?: Subscription;
   public getLisenGameStartSubscription$?: Subscription;
   public getRemoteUserSubscription$?: Subscription;
+  public getLisenUsersChangeSubscription$?: Subscription;
   public subscription: Subscription = new Subscription();
 
 
@@ -68,106 +70,114 @@ export class GameComponent implements OnInit {
     //init serve params
     this.getCurrentServeParams$$ = this.roomsService.getCurrentServeParams();
     this.currentServeParamsSubscription$ = this.getCurrentServeParams$$.subscribe(serveParams => {
-      this.serverParams = serveParams;
-    });
-    this.subscription.add(this.currentServeParamsSubscription$);
-
-
-    this.getCurrentRoom$$ = this.roomsService.getCurrentRoom();
-    this.currentRoomSubscription$ = this.getCurrentRoom$$.subscribe((room) => {
-
-      if (!room.id) {
-        //game don't exist in state
-
-        //get the id of current room
-        this.roomId = this.route.snapshot.paramMap.get('roomId') ?? '';
-
-        //get the room
-        this.getRoomById$$ = this.roomsService.getRoomById(this.roomId);
-        this.roomByIdSubscription$ = this.getRoomById$$?.subscribe((retrieveRoom) => {
-
-          //save current room
-          this.currentRoom = retrieveRoom;
-
-          this.currentStep = retrieveRoom?.steps![retrieveRoom.steps!.length - 1];
-
-          this.retrieveTime();
-
-          //get user id in user datas
-          this.currentUser = this.usersService.getCurrentUserFromLocale();
-
-
-          //if we have more than one step then game start already, no more user can join the game
-          this.alreadyStart = retrieveRoom.steps && retrieveRoom.steps?.length > 1 ? true : false;
-
-          if (this.currentUser) {
-
-            //get user updated datas from the server
-            this.getRemoteUser$$ = this.usersService.getUser(this.currentUser.id!);
-            this.getRemoteUserSubscription$ = this.getRemoteUser$$.subscribe(
-              retriveUser => {
-                let index = this.currentStep?.users?.findIndex(user => user.id == retriveUser?.id);
-                if (index == -1) {
-                  //TODO:::user is not player of current game he cannot play
-                  this.isUserOfCurrentGame = false;
-                  alert('user is not player of current game he cannot play');
-                  //Show dailog to new user informations 
-                  this.openDialog();
-                } else {
-                  //share CurrentUser to Service
-                  this.usersService.addCurrentUser(retriveUser);
-                  this.socketService.addNewConnectedGame(retriveUser.id!, retrieveRoom.id!);
-                }
-
-              });
-
-
+      if(Object.keys(serveParams).length){
+        this.serverParams = serveParams;
+        this.subscription.add(this.currentServeParamsSubscription$);
+    
+    
+        this.getCurrentRoom$$ = this.roomsService.getCurrentRoom();
+        this.currentRoomSubscription$ = this.getCurrentRoom$$.subscribe((room) => {
+    
+          if (!room.id) {
+            //game don't exist in state
+    
+            //get the id of current room
+            this.roomId = this.route.snapshot.paramMap.get('roomId') ?? '';
+    
+            //get the room
+            this.getRoomById$$ = this.roomsService.getRoomById(this.roomId);
+            this.roomByIdSubscription$ = this.getRoomById$$?.subscribe((retrieveRoom) => {
+    
+              //save current room
+              this.currentRoom = retrieveRoom;
+    
+              this.currentStep = retrieveRoom?.steps![retrieveRoom.steps!.length - 1];
+    
+              this.retrieveTime();
+    
+              //get user id in user datas
+              this.currentUser = this.usersService.getCurrentUserFromLocale();
+    
+    
+              //if we have more than one step then game start already, no more user can join the game
+              this.alreadyStart = retrieveRoom.steps && retrieveRoom.steps?.length > 1 ? true : false;
+    
+              if (this.currentUser) {
+    
+                //get user updated datas from the server
+                this.getRemoteUser$$ = this.usersService.getUser(this.currentUser.id!);
+                this.getRemoteUserSubscription$ = this.getRemoteUser$$.subscribe(
+                  retriveUser => {
+                    let index = this.currentStep?.users?.findIndex(user => user.id == retriveUser?.id);
+                    if (index == -1) {
+                      //TODO:::user is not player of current game he cannot play
+                      this.isUserOfCurrentGame = false;
+                      alert('user is not player of current game he cannot play');
+                      //Show dailog to new user informations 
+                      this.openDialog();
+                    } else {
+                      //share CurrentUser to Service
+                      this.usersService.addCurrentUser(retriveUser);
+                      this.socketService.addNewConnectedGame(retriveUser.id!, retrieveRoom.id!);
+                    }
+    
+                  });
+    
+    
+              } else {
+                //Show dailog to new user informations 
+                this.openDialog();
+              }
+    
+              //get the currentStep and listen the game from server 
+              this.listenGameChange();
+    
+              //listen start of game
+              this.listenGameStart();
+    
+              //listen users changes
+              this.listenUsersChange();
+            });
+    
+            //add the subscription for common unsuscribre    
+            this.subscription.add(this.roomByIdSubscription$);
+            this.subscription.add(this.getRemoteUserSubscription$);
           } else {
-            //Show dailog to new user informations 
-            this.openDialog();
+            //game exist in state
+    
+            //save current room
+            this.currentRoom = room;
+    
+            this.currentStep = room?.steps![room.steps!.length - 1];
+            this.roomId = room.roomId!;
+    
+            this.retrieveTime();
+    
+            this.listenGameChange();
+    
+            //listen start of game
+            this.listenGameStart();
+    
+            //listen users changes
+            this.listenUsersChange();
           }
-
-          //get the currentStep and listen the game from server 
-          this.listenGameChange();
-
-          //listen start of game
-          this.lisenGameStart();
+    
         });
-
-        //add the subscription for common unsuscribre    
-        this.subscription.add(this.roomByIdSubscription$);
-        this.subscription.add(this.getRemoteUserSubscription$);
-      } else {
-        //game exist in state
-
-        //save current room
-        this.currentRoom = room;
-
-        this.currentStep = room?.steps![room.steps!.length - 1];
-        this.roomId = room.roomId!;
-
-        this.retrieveTime();
-
-        this.listenGameChange();
-
-        //listen start of game
-        this.lisenGameStart();
+    
+        this.listenCurrentUserChanges();
+    
+        //add the subscription for common unsuscribre
+        this.subscription.add(this.currentRoomSubscription$);
       }
-
     });
-
-    this.listenCurrentUserChanges();
-
-    //add the subscription for common unsuscribre
-    this.subscription.add(this.currentRoomSubscription$);
 
 
   }
 
-  currentlyDataUpdate(){
-    let responsesArray : Array<number> = [];
-    let usersCanBeCounted = this.currentStep?.users?.filter((user)=> user.globalScore! > 0);
-    if(usersCanBeCounted?.length == 1 && usersCanBeCounted[0].id == this.currentUser!.id){
+  currentlyDataUpdate() {
+    let responsesArray: Array<number> = [];
+    let usersCanBeCounted = this.currentStep?.users?.filter((user) => user.globalScore! > 0);
+    if (usersCanBeCounted?.length == 1 && usersCanBeCounted[0].id == this.currentUser!.id) {
       alert("Congratulations you are the winner!!!!!!");
     }
     usersCanBeCounted?.forEach((user) => responsesArray.push(user.currentResponse!));
@@ -178,15 +188,16 @@ export class GameComponent implements OnInit {
     this.getUpdatedRoom$$ = this.socketService.listenGameChange(this.roomId);
     this.updatedRoomSubscription$ = this.getUpdatedRoom$$.subscribe((newRoom: Room) => {
       //if we have a new step, it mean that we have a new step and need to start enterCouner
-      
+
+      //update current User
+      this.usersService.addCurrentUser(newRoom.steps![newRoom.steps!.length - 1].users!.find((user: User) => user.id == this.currentUser?.id)!);
+
       if (newRoom.steps!.length > 1 && newRoom?.steps![newRoom.steps!.length - 1].id != this.currentStep?.id) {
         this.restartCounter(this.timeInterStep);
 
-        //update current User
-        this.usersService.addCurrentUser(newRoom.steps![newRoom.steps!.length - 1].users!.find((user:User)=>user.id == this.currentUser?.id)!);
 
         //check state of currentUser
-        if(this.currentUser!.globalScore! <= 0){
+        if (this.currentUser!.globalScore! <= 0) {
           alert('Game Over');
         }
       }
@@ -225,7 +236,7 @@ export class GameComponent implements OnInit {
     this.subscription.add(this.getCurrentUserSubscription$);
   }
 
-  lisenGameStart() {
+  listenGameStart() {
     this.getListenGameStart$$ = this.socketService.listenGameLauched(this.roomId);
     this.getLisenGameStartSubscription$ = this.getListenGameStart$$.subscribe((response) => {
       if (response) {
@@ -237,6 +248,22 @@ export class GameComponent implements OnInit {
 
     //add the subscription for common unsuscribre
     this.subscription.add(this.getLisenGameStartSubscription$);
+  }
+
+  listenUsersChange() {
+    this.getListeUsersChange$$ = this.socketService.listenUsersChange(this.currentRoom?.id!);
+    this.getLisenUsersChangeSubscription$ = this.getListeUsersChange$$.subscribe((data: any) => {
+      //update user in laststep of currentRoom and save this
+      this.currentStep!.users = this.currentStep!.users!.map( (user: User) => {
+        const userUpdate = user.id == data.id ? { ...user, ...data } as User : user;
+        if(user.id == this.currentUser!.id){
+          this.currentUser = userUpdate;
+        }
+        return userUpdate;
+      });
+      
+      // this.roomsService.addCurrentRoom(this.currentRoom!);
+    });
   }
 
   counterEnd(): void {
@@ -261,6 +288,9 @@ export class GameComponent implements OnInit {
   sendCurrentResponse() {
     this.responseTosend = this.responseTosend != null ? this.responseTosend : this.getRandomInt(100);
     this.socketService.respondToStepOfRoom(this.responseTosend, this.roomId, this.currentUser!, this.currentStep?.id!);
+    
+    //reset response
+    this.responseTosend = undefined;
   }
 
   getRandomInt(max: number): Number {
@@ -274,7 +304,6 @@ export class GameComponent implements OnInit {
 
   retrieveTime(): void {
     const ADITIONNAL_WAITING_TIME = (this.serverParams?.timeInterAwaitResponseServer! + this.timeInterStep);
-
     //Retreive the timer
     this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), this.currentStep?.durationMillisecond! - (new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime()) + ADITIONNAL_WAITING_TIME);
   }
@@ -297,7 +326,7 @@ export class GameComponent implements OnInit {
     let userStepwinner = MAX;
     let isExactlyTargetNumber = false;
 
-    let usersWithSameResponses: Array<String> =[];
+    let usersWithSameResponses: Array<String> = [];
 
 
 

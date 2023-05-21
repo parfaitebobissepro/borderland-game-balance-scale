@@ -164,6 +164,7 @@ const addNewConnectedGame = ({
         data
     ) => {
         await userService.addUserAsConnected(socket.id, data.userId, data.roomId);
+        io.emit(`update-user-${data.roomId}`, { id: data.userId, connected: true });
     })
 };
 
@@ -254,8 +255,13 @@ const disconnection = ({
 
                 //if admin, remove for him admin access
                 let SocketIdObject = findEntrieInConnectedSocketUsers(userService.usersConnected, userId);
+                let roomIdFoundAdmin = SocketIdObject.value.split(' ')[1];
+
                 if (SocketIdObject) {
                     await userService.removeUserAsAdmin(SocketIdObject.key);
+
+                    //send back informations of game
+                    io.emit(`update-user-${roomIdFoundAdmin}`, { id: userId, admin: false, connected: false });
                 }
 
                 //find new admin
@@ -271,17 +277,28 @@ const disconnection = ({
                     await userService.updateUserById(userIdFound, {
                         admin: true
                     });
+                    console.log({ id: userIdFound, admin: true });
+                    //send back informations of game
+                    io.emit(`update-user-${roomIdFound}`, { id: userIdFound, admin: true });
+                }
+            } else {
+
+                //find room
+                let SocketIdObject = findAnyInConnectedSocketUsers(userService.usersConnected);
+                let roomIdFound;
+                if (SocketIdObject) {
+                    roomIdFound = SocketIdObject.value.split(' ')[1];
                 }
 
-                //send back informations of game
-                if (roomIdFound) {
-                    let roomUpdated = await roomService.getRoomById(roomIdFound);
-                    roomUpdated = roomUpdated.toJSON();
-                    io.emit(`game-${roomUpdated.roomId}`, roomUpdated);
+                //if not admin, remove for him as connected
+                SocketIdObject = findEntrieInConnectedSocketUsers(userService.usersConnected, userId);
+                if (SocketIdObject) {
+                    await userService.removeUserAsConnected(SocketIdObject.key);
+                    //send back informations of game
+                    io.emit(`update-user-${roomIdFound}`, { id: userId, connected: false });
                 }
-
-                logger.info('user disconnected ');
             }
+            logger.info('user disconnected ');
 
         }
     });

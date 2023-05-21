@@ -18,7 +18,7 @@ export class RoomsService {
   }
 
   addCurrentRoom(room: Room): void {
-    this.currentRoomsubject$$.next(room); 
+    this.currentRoomsubject$$.next(room);
   }
 
   getCurrentRoom(): Observable<Room> {
