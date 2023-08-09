@@ -56,7 +56,7 @@ export class GameComponent implements OnInit {
   public getLisenGameStartSubscription$?: Subscription;
   public getRemoteUserSubscription$?: Subscription;
   public getLisenUsersChangeSubscription$?: Subscription;
-  public subscription: Subscription = new Subscription();
+  public subscriptions: Subscription = new Subscription();
 
 
 
@@ -72,7 +72,7 @@ export class GameComponent implements OnInit {
     this.currentServeParamsSubscription$ = this.getCurrentServeParams$$.subscribe(serveParams => {
       if(Object.keys(serveParams).length){
         this.serverParams = serveParams;
-        this.subscription.add(this.currentServeParamsSubscription$);
+        this.subscriptions.add(this.currentServeParamsSubscription$);
     
     
         this.getCurrentRoom$$ = this.roomsService.getCurrentRoom();
@@ -112,7 +112,7 @@ export class GameComponent implements OnInit {
                     if (index == -1) {
                       //TODO:::user is not player of current game he cannot play
                       this.isUserOfCurrentGame = false;
-                      alert('user is not player of current game he cannot play');
+                      console.log('user is not player of current game he cannot play','color:#F00');
                       //Show dailog to new user informations 
                       this.openDialog();
                     } else {
@@ -140,8 +140,8 @@ export class GameComponent implements OnInit {
             });
     
             //add the subscription for common unsuscribre    
-            this.subscription.add(this.roomByIdSubscription$);
-            this.subscription.add(this.getRemoteUserSubscription$);
+            this.subscriptions.add(this.roomByIdSubscription$);
+            this.subscriptions.add(this.getRemoteUserSubscription$);
           } else {
             //game exist in state
     
@@ -167,7 +167,7 @@ export class GameComponent implements OnInit {
         this.listenCurrentUserChanges();
     
         //add the subscription for common unsuscribre
-        this.subscription.add(this.currentRoomSubscription$);
+        this.subscriptions.add(this.currentRoomSubscription$);
       }
     });
 
@@ -178,7 +178,8 @@ export class GameComponent implements OnInit {
     let responsesArray: Array<number> = [];
     let usersCanBeCounted = this.currentStep?.users?.filter((user) => user.globalScore! > 0);
     if (usersCanBeCounted?.length == 1 && usersCanBeCounted[0].id == this.currentUser!.id) {
-      alert("Congratulations you are the winner!!!!!!");
+      console.log("Congratulations you are the winner!!!!!!");
+      this.subscriptions.unsubscribe();
     }
     usersCanBeCounted?.forEach((user) => responsesArray.push(user.currentResponse!));
     this.currentAverage = this.getAverage(responsesArray);
@@ -198,18 +199,20 @@ export class GameComponent implements OnInit {
 
         //check state of currentUser
         if (this.currentUser!.globalScore! <= 0) {
-          alert('Game Over');
+          console.log('Game Over');
+          this.subscriptions.unsubscribe();
         }
       }
       this.roomsService.addCurrentRoom(newRoom);
       this.currentlyDataUpdate();
       if (newRoom.closed) {
-        alert('Game have been closed');
+        console.log('Game have been closed');
+        this.subscriptions.unsubscribe();
       }
     });
 
     //add the subscription for common unsuscribre
-    this.subscription.add(this.updatedRoomSubscription$);
+    this.subscriptions.add(this.updatedRoomSubscription$);
   }
 
   openDialog(): void {
@@ -233,7 +236,7 @@ export class GameComponent implements OnInit {
     });
 
     //add the subscription for common unsuscribre
-    this.subscription.add(this.getCurrentUserSubscription$);
+    this.subscriptions.add(this.getCurrentUserSubscription$);
   }
 
   listenGameStart() {
@@ -247,7 +250,7 @@ export class GameComponent implements OnInit {
 
 
     //add the subscription for common unsuscribre
-    this.subscription.add(this.getLisenGameStartSubscription$);
+    this.subscriptions.add(this.getLisenGameStartSubscription$);
   }
 
   listenUsersChange() {
@@ -391,7 +394,7 @@ export class GameComponent implements OnInit {
 
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 }
 
