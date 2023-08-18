@@ -7,7 +7,7 @@ const {
 } = require('../services');
 const gameController = require('./game.controller');
 
-const TIMEOUT_AWAITING_USERS_RESPONES = 2000;
+const TIMEOUT_AWAITING_USERS_RESPONES = 4000;
 
 const getParamsOfServer = ({
     socket,
@@ -26,6 +26,7 @@ const createRoom = ({
     io
 } = {}) => {
     socket.on('createRoom', async(pseudo) => {
+        const currentDate = Date.now();
         if (pseudo != null && pseudo != '') {
             const roomId = UtilFunctions.generateUniqueString(pseudo);
 
@@ -37,13 +38,13 @@ const createRoom = ({
             });
             const step = await stepService.createStep({
                 rang: 0,
-                startDate: Date.now(),
+                startDate: currentDate,
                 users: [user]
             });
             const room = await roomService.createRoom({
                 roomId: roomId,
                 steps: [step],
-                actualServerDate: new Date(Date.now())
+                actualServerDate: new Date(currentDate)
             });
 
             io.emit(socket.id, room.toJSON());
@@ -216,6 +217,8 @@ const makeStepGameOfRoom = ({
                 let roomUpdated = await roomService.getRoomByIdRoomId(room.roomId);
                 roomUpdated = roomUpdated.toJSON();
 
+                // remove losers as admin
+                roomUpdated = removeLoserAsAdmin(roomUpdated);
 
                 //update date of room
                 roomUpdated.actualServerDate = new Date(Date.now());
@@ -327,6 +330,40 @@ const findAnyInConnectedSocketUsers = (object) => {
 }
 
 
+const removeLoserAsAdmin = (roomJson) => {
+    let currentStep = roomJson.steps[roomJson.steps.length - 1];
+    let nmbrUsers = currentStep.users.length;
+    let i=0;
+    let newAdminIndex;
+    let prevAdminIndex;
+
+    while(i<=nmbrUsers){
+        //break search if admin
+            if(currentStep.users[i].admin == true && currentStep.users[i].globalScore > 0){
+                return roomJson;
+            }
+
+            if(currentStep.users[i].admin == true && currentStep.users[i].globalScore <= 0){
+                prevAdminIndex=i;
+                //save index of new admin that respect all conditions
+                currentStep.users.forEach((user,index)=>{
+                    if(currentStep.users[index].admin == false && currentStep.users[index].globalScore > 0) {
+                        newAdminIndex = index;
+                    }
+                });
+            }
+
+            if(currentStep.users[prevAdminIndex]){
+                currentStep.users[prevAdminIndex].admin = false;
+            }
+            
+            if(currentStep.users[newAdminIndex]){
+                //update room and return it
+                currentStep.users[newAdminIndex].admin = true;
+            }
+            return roomJson;
+        }
+    }
 
 
 

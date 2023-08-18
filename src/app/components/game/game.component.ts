@@ -27,7 +27,7 @@ export class GameComponent implements OnInit {
   public roomId: string = '';
   public timerDate?: Date;
   public nmbrMilliSecond: number = 0;
-  public timeInterStep: number = 4000;
+  public timeInterStep: number = 0;
   public serverParams?: ServerParams;
   public responseTosend?: Number;
   public gameOver: Boolean = false;
@@ -200,7 +200,7 @@ export class GameComponent implements OnInit {
         //check state of currentUser
         if (this.currentUser!.globalScore! <= 0) {
           console.log('Game Over');
-          this.subscriptions.unsubscribe();
+          // this.subscriptions.unsubscribe();
         }
       }
       this.roomsService.addCurrentRoom(newRoom);
@@ -279,8 +279,10 @@ export class GameComponent implements OnInit {
   }
 
   restartCounter(nmbrMilliSecond: number) {
+    console.log('nmbrMilliSecond',nmbrMilliSecond);
     setTimeout(() => {
       this.activeTimerByDate(this.currentStep?.startDate!, this.currentStep?.durationMillisecond!);
+      console.log('restartCounter');
     }, nmbrMilliSecond);
   }
 
