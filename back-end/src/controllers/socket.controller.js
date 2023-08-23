@@ -201,7 +201,7 @@ const makeStepGameOfRoom = ({
                 }));
                 let newStep = await stepService.createStep({
                     rang: parseInt(lastStep.rang) + 1,
-                    startDate: Date.now(),
+                    startDate: new Date(Date.now()),
                     users: users
                 });
 

@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { UsersService } from 'src/app/services/users/users.service';
 import { User } from 'src/app/models/user';
 import { ServerParams } from 'src/app/models/server-params';
+import { startFrom } from 'src/main';
 
 @Component({
   selector: 'app-game',
@@ -27,12 +28,13 @@ export class GameComponent implements OnInit {
   public roomId: string = '';
   public timerDate?: Date;
   public nmbrMilliSecond: number = 0;
-  public timeInterStep: number = 0;
+  public timeInterStep: number = 4000;
   public serverParams?: ServerParams;
   public responseTosend?: Number;
   public gameOver: Boolean = false;
   public alreadyStart: Boolean = false;
   public isUserOfCurrentGame: Boolean = true;
+  public timeOfRetrieveRequest?: number;
 
 
   //current step variables
@@ -59,13 +61,17 @@ export class GameComponent implements OnInit {
   public subscriptions: Subscription = new Subscription();
 
 
-
+  //start time of component
+  public startFrom = startFrom; 
 
 
   constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog) {
   }
 
+
+
   ngOnInit() {
+
 
     //init serve params
     this.getCurrentServeParams$$ = this.roomsService.getCurrentServeParams();
@@ -92,7 +98,12 @@ export class GameComponent implements OnInit {
               this.currentRoom = retrieveRoom;
     
               this.currentStep = retrieveRoom?.steps![retrieveRoom.steps!.length - 1];
-    
+
+              //set the retrive request time
+              this.timeOfRetrieveRequest = new Date().getTime() - this.startFrom;
+              console.log('timeOfRetrieveRequest',this.timeOfRetrieveRequest);
+              
+
               this.retrieveTime();
     
               //get user id in user datas
@@ -279,10 +290,8 @@ export class GameComponent implements OnInit {
   }
 
   restartCounter(nmbrMilliSecond: number) {
-    console.log('nmbrMilliSecond',nmbrMilliSecond);
     setTimeout(() => {
       this.activeTimerByDate(this.currentStep?.startDate!, this.currentStep?.durationMillisecond!);
-      console.log('restartCounter');
     }, nmbrMilliSecond);
   }
 
@@ -308,9 +317,28 @@ export class GameComponent implements OnInit {
   }
 
   retrieveTime(): void {
-    const ADITIONNAL_WAITING_TIME = (this.serverParams?.timeInterAwaitResponseServer! + this.timeInterStep);
+    // const ADITIONNAL_WAITING_TIME : number =  ((this.currentStep?.rang != 0 ? this.serverParams?.timeInterAwaitResponseServer! : 0) + this.timeInterStep);
+    // const TIME_OF_STEP_SPEND = Math.round((new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime() + ADITIONNAL_WAITING_TIME)/1000)*1000;
+    // const TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME = TIME_OF_STEP_SPEND  + (this.timeOfRetrieveRequest? Math.round(this.timeOfRetrieveRequest/1000)*1000 : 0);
+    // const DURATION_LEFT = this.currentStep?.durationMillisecond! - TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME;
+
+    const TIME_OF_STEP_SPEND = new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime();
+    // const TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME = TIME_OF_STEP_SPEND ;
+    const DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest? Math.round(this.timeOfRetrieveRequest/1000)*1000 : 0) + this.timeInterStep;
+
+    // console.log('ADITIONNAL_WAITING_TIME',ADITIONNAL_WAITING_TIME/1000);
+    console.log('TIME_OF_STEP_SPEND',TIME_OF_STEP_SPEND/1000);
+    // console.log('TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME',TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME/1000);
+    console.log('DURATION_LEFT',DURATION_LEFT/1000);
+    
     //Retreive the timer
-    this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), this.currentStep?.durationMillisecond! - (new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime()) + ADITIONNAL_WAITING_TIME);
+    this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), DURATION_LEFT);
+
+    //reset time of retrieve at undefined
+    if(this.timeOfRetrieveRequest){
+      console.log(this.timeOfRetrieveRequest);
+      this.timeOfRetrieveRequest = undefined;
+    }
   }
 
 
