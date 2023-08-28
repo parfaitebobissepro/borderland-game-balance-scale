@@ -1,0 +1,55 @@
+
+.game-rules{
+    // width: 100vw;
+    // height: 100vh;
+    // position: absolute;
+    // left: 0;
+    // top: 0;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0px 0px 50rem 50rem rgba(0, 0, 0, 0.555) inset;
+    z-index: 5;
+    align-items: center;
+    background-image: url('/assets/images/master_game.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    font-size: 1.3rem;
+}
+
+#parchment {
+  position: relative;
+  width: 75%;
+  top: 0;
+  left: 0;
+  margin: 2em 0;
+  padding: 4em;
+  box-shadow: 2px 3px 20px black, 0 0 100px #8f5922 inset;
+  background: #202020a2;
+  border-radius: 5px;
+
+}
+
+#parchment ul{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 50px;
+    justify-content: space-around;
+    padding-left: 0;
+    margin-top: 2rem;
+}
+
+#parchment ul li{
+    width: 40%;
+    text-align: justify;
+    color: #b9b9b9;
+    font-variant: small-caps;
+}
+
+#parchment p {
+  font-size: 1em;
+  color: #b9b9b9;
+  margin-top: .75em;
+  text-align: justify;
+  width: 100%;
+}

@@ -1,5 +1,5 @@
 <div class="main-container">
-    <app-control-panel (responseSelected)="updatResponseToSend($event)"></app-control-panel>
+    <app-control-panel (responseSelected)="updatResponseToSend($event)" *ngIf="!isgameOverAndlooser"></app-control-panel>
     <div class="game-panel">
         <div class="users-container">
             <h1>{{currentStep?.rang}}</h1>
@@ -22,5 +22,9 @@
             <app-timer *ngIf="timerDate" (counterEnd)="counterEnd()" [nmbrMilliSecond]="nmbrMilliSecond" [scheduler]="1000" [date]="timerDate"></app-timer>
         </div>
         <button (click)="lauchGame()" *ngIf="currentUser?.admin && currentStep?.rang == 0 && currentStep?.users?.length! >=2">Lauch Game</button>
+        <button (click)="processGameOverLooser()" >Game Rules</button>
     </div>
+    <app-game-over *ngIf="isgameOverAndlooser"></app-game-over>
+    <!-- <app-game-rules></app-game-rules> -->
+    <!-- <app-game-congrat></app-game-congrat> -->
 </div>

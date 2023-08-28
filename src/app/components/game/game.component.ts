@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { Room } from 'src/app/models/room';
@@ -11,6 +11,10 @@ import { UsersService } from 'src/app/services/users/users.service';
 import { User } from 'src/app/models/user';
 import { ServerParams } from 'src/app/models/server-params';
 import { startFrom } from 'src/main';
+import { GameRulesComponent } from '../game-rules/game-rules.component';
+import { GameCongratComponent } from '../game-congrat/game-congrat.component';
+import { GameOverComponent } from '../game-over/game-over.component';
+import { AudioService } from 'src/app/services/audio/audio.service';
 
 @Component({
   selector: 'app-game',
@@ -31,10 +35,14 @@ export class GameComponent implements OnInit {
   public timeInterStep: number = 4000;
   public serverParams?: ServerParams;
   public responseTosend?: Number;
-  public gameOver: Boolean = false;
   public alreadyStart: Boolean = false;
   public isUserOfCurrentGame: Boolean = true;
   public timeOfRetrieveRequest?: number;
+
+  //game state variables
+  public isgameOverAndlooser: Boolean = false; 
+  // public isgameOverAndwiner: Boolean = false; 
+  // public isgameOverAndwiner: Boolean = false; 
 
 
   //current step variables
@@ -62,10 +70,10 @@ export class GameComponent implements OnInit {
 
 
   //start time of component
-  public startFrom = startFrom; 
+  public startFrom = startFrom;
 
 
-  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog) {
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService:AudioService) {
   }
 
 
@@ -125,7 +133,7 @@ export class GameComponent implements OnInit {
                       this.isUserOfCurrentGame = false;
                       console.log('user is not player of current game he cannot play','color:#F00');
                       //Show dailog to new user informations 
-                      this.openDialog();
+                      this.openDialogForJoin();
                     } else {
                       //share CurrentUser to Service
                       this.usersService.addCurrentUser(retriveUser);
@@ -137,7 +145,7 @@ export class GameComponent implements OnInit {
     
               } else {
                 //Show dailog to new user informations 
-                this.openDialog();
+                this.openDialogForJoin();
               }
     
               //get the currentStep and listen the game from server 
@@ -190,6 +198,7 @@ export class GameComponent implements OnInit {
     let usersCanBeCounted = this.currentStep?.users?.filter((user) => user.globalScore! > 0);
     if (usersCanBeCounted?.length == 1 && usersCanBeCounted[0].id == this.currentUser!.id) {
       console.log("Congratulations you are the winner!!!!!!");
+      this.processGameOverWinner();
       this.subscriptions.unsubscribe();
     }
     usersCanBeCounted?.forEach((user) => responsesArray.push(user.currentResponse!));
@@ -211,6 +220,7 @@ export class GameComponent implements OnInit {
         //check state of currentUser
         if (this.currentUser!.globalScore! <= 0) {
           console.log('Game Over');
+          this.processGameOverLooser();
           // this.subscriptions.unsubscribe();
         }
       }
@@ -226,7 +236,7 @@ export class GameComponent implements OnInit {
     this.subscriptions.add(this.updatedRoomSubscription$);
   }
 
-  openDialog(): void {
+  openDialogForJoin(): void {
     this.dialog.open<RegisterComponent>(RegisterComponent, {
       width: '250px',
       enterAnimationDuration: '20',
@@ -235,6 +245,26 @@ export class GameComponent implements OnInit {
         currentRoomId: this.roomId,
         users: this.currentStep?.users
       },
+    });
+  }
+
+  openDialogRules(): void {
+    this.dialog.open(GameRulesComponent, {
+      enterAnimationDuration: '20',
+      exitAnimationDuration: '10',
+    });
+  }
+
+  processGameOverLooser(): void {
+    this.isgameOverAndlooser = true;
+    this.audioService.playAudio('assets/audios/manx27s-cry-122258.mp3');
+  }
+
+  processGameOverWinner(): void {
+    this.dialog.open(GameCongratComponent, {
+      width: '40vw',
+      enterAnimationDuration: '20',
+      exitAnimationDuration: '10',
     });
   }
 
@@ -317,26 +347,14 @@ export class GameComponent implements OnInit {
   }
 
   retrieveTime(): void {
-    // const ADITIONNAL_WAITING_TIME : number =  ((this.currentStep?.rang != 0 ? this.serverParams?.timeInterAwaitResponseServer! : 0) + this.timeInterStep);
-    // const TIME_OF_STEP_SPEND = Math.round((new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime() + ADITIONNAL_WAITING_TIME)/1000)*1000;
-    // const TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME = TIME_OF_STEP_SPEND  + (this.timeOfRetrieveRequest? Math.round(this.timeOfRetrieveRequest/1000)*1000 : 0);
-    // const DURATION_LEFT = this.currentStep?.durationMillisecond! - TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME;
-
     const TIME_OF_STEP_SPEND = new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime();
-    // const TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME = TIME_OF_STEP_SPEND ;
     const DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest? Math.round(this.timeOfRetrieveRequest/1000)*1000 : 0) + this.timeInterStep;
 
-    // console.log('ADITIONNAL_WAITING_TIME',ADITIONNAL_WAITING_TIME/1000);
-    console.log('TIME_OF_STEP_SPEND',TIME_OF_STEP_SPEND/1000);
-    // console.log('TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME',TOTAL_TIME_OF_STEP_WITH_REQUEST_TIME/1000);
-    console.log('DURATION_LEFT',DURATION_LEFT/1000);
-    
     //Retreive the timer
     this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), DURATION_LEFT);
 
     //reset time of retrieve at undefined
     if(this.timeOfRetrieveRequest){
-      console.log(this.timeOfRetrieveRequest);
       this.timeOfRetrieveRequest = undefined;
     }
   }

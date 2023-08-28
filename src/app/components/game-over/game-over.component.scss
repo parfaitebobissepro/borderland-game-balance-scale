@@ -1,0 +1,261 @@
+@import url("https://fonts.googleapis.com/css2?family=Trade+Winds&display=swap");
+
+
+.content {
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+    position: absolute;
+    left: 0;
+	top: 0;
+    z-index: 10;
+}
+
+.col {
+	width: 3vmax;
+	height: 0;
+	position: relative;
+	box-sizing: border-box;
+	margin: 0;
+	float: left;
+	border-radius: 0 0 3vmax 3vmax;
+	margin-top: -2vmin;
+	background: #9f0000;
+	animation: drop 5s cubic-bezier(0.34, 0.03, 0.76, 0.94) 0s;
+	animation-fill-mode: forwards;
+	box-shadow: 0 0 2px 1px #9f0000;
+	/*animation-play-state: paused;*/
+}
+
+.col:before {
+	content: "";
+	background: #9f0000;
+	width: calc(100% + 0.2vmin);
+	height: 3vmax;
+	position: absolute;
+	bottom: -0.15vmin;
+	border-radius: 0 100% 100% 100%;
+	left: -0.1vmin;
+	transform: rotate(35deg);
+}
+
+.col:after {
+	content: "";
+	width: 2.25vmax;
+	height: 2.25vmax;
+	position: absolute;
+	border-radius: 100%;
+	right: 0.25vmax;
+	bottom: 0.25vmax;
+	border: 0.25vmax solid #ffffff00;
+	border-bottom-color: #ffffff50;
+	transform: rotate(-65deg);
+	filter: blur(1px) drop-shadow(0 0 5px #fff);
+	opacity: 0.5;
+}
+
+.col:nth-child(2) {
+	animation-delay: 0.5s;
+	animation-duration: 6s;
+	width: 4vmax;
+}
+
+.col:nth-child(3) {
+	animation-delay: 0.7s;
+	animation-duration: 4s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(4) {
+	animation-delay: 0.75s;
+	animation-duration: 6.17s;
+}
+
+.col:nth-child(5) {
+	animation-delay: 1.15s;
+	animation-duration: 4.5s;
+	width: 4vmax;
+}
+
+.col:nth-child(6) {
+	animation-delay: 0.65s;
+	animation-duration: 5.5s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(7) {
+	animation-delay: 0.85s;
+	animation-duration: 5.75s;
+}
+
+.col:nth-child(8) {
+	animation-delay: 1.05s;
+	animation-duration: 5.16s;
+}
+
+.col:nth-child(9) {
+	animation-delay: 0.15s;
+	animation-duration: 4.25s;
+	width: 4vmax;
+}
+
+.col:nth-child(10) {
+	animation-delay: 0.45s;
+	animation-duration: 4.75s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(11) {
+	animation-delay: 0.25s;
+	animation-duration: 4.5s;
+}
+.col:nth-child(12) {
+	animation-delay: 0.45s;
+	animation-duration: 5.35s;
+	width: 4vmax;
+}
+
+.col:nth-child(13) {
+	animation-delay: 0.625s;
+	animation-duration: 4.15s;
+}
+
+.col:nth-child(14) {
+	animation-delay: 0.25s;
+	animation-duration: 4.38s;
+	width: 4vmax;
+}
+
+.col:nth-child(15) {
+	animation-delay: 0.45s;
+	animation-duration: 6.035s;
+}
+
+.col:nth-child(16) {
+	animation-delay: 0.145s;
+	animation-duration: 4.35s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(17) {
+	animation-delay: 0.75s;
+	animation-duration: 4.65s;
+	width: 4vmax;
+}
+
+.col:nth-child(18) {
+	animation-delay: 0.325s;
+	animation-duration: 3.85s;
+}
+
+.col:nth-child(19) {
+	animation-delay: 0.15s;
+	animation-duration: 4.75s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(20) {
+	animation-delay: 0.33s;
+	animation-duration: 5.05s;
+	width: 4vmax;
+}
+
+.col:nth-child(21) {
+	animation-delay: 0.133s;
+	animation-duration: 5.95s;
+}
+
+.col:nth-child(22) {
+	animation-delay: 0.73s;
+	animation-duration: 4.44s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(23) {
+	animation-delay: 0.55s;
+	animation-duration: 5.05s;
+	width: 4vmax;
+}
+
+.col:nth-child(24) {
+	animation-delay: 0.66s;
+	animation-duration: 6.05s;
+}
+
+.col:nth-child(25) {
+	animation-delay: 0.33s;
+	animation-duration: 3.95s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(26) {
+	animation-delay: 0.525s;
+	animation-duration: 4.65s;
+}
+
+.col:nth-child(27) {
+	animation-delay: 0.225s;
+	animation-duration: 4.95s;
+	width: 4vmax;
+}
+
+.col:nth-child(28) {
+	animation-delay: 0.99s;
+	animation-duration: 3.575s;
+	width: 3.35vmax;
+}
+
+.col:nth-child(29) {
+	animation-delay: 0.88s;
+	animation-duration: 4.35s;
+	width: 4vmax;
+}
+
+.col:nth-child(30) {
+	animation-delay: 0.77s;
+	animation-duration: 5.15s;
+}
+
+@keyframes drop {
+	0% {
+		height: 0%;
+	}
+	100% {
+		height: calc(100% + 6vmax);
+	}
+}
+
+@keyframes opacity {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+.text {
+	text-align: center;
+	font-family: "Trade Winds", Arial, Helvetica, serif;
+	position: absolute;
+	font-size: 20vmin;
+	font-weight: bold;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/*mix-blend-mode: overlay;*/
+	// opacity: 0.95;
+	text-shadow: -2px -2px 2px #0000006b;
+	-webkit-text-stroke: 2.25vmin #0000004d;
+	-webkit-text-fill-color: #000000;
+	opacity: 0;
+	animation: opacity 4s forwards;
+}
+
+@media only screen and (orientation: portrait) {
+	.col:before {
+		height: 3vmin;
+	}
+}

@@ -6,6 +6,9 @@ import { UserComponent } from './user/user.component';
 import { HomeComponent } from './home/home.component';
 import { GameComponent } from './game/game.component';
 import { SharedModule } from '../shared/shared.module';
+import { GameOverComponent } from './game-over/game-over.component';
+import { GameRulesComponent } from './game-rules/game-rules.component';
+import { GameCongratComponent } from './game-congrat/game-congrat.component';
 
 @NgModule({
     declarations: [
@@ -13,7 +16,10 @@ import { SharedModule } from '../shared/shared.module';
         ResponseCardComponent,
         UserComponent,
         HomeComponent,
-        GameComponent
+        GameComponent,
+        GameOverComponent,
+        GameRulesComponent,
+        GameCongratComponent
     ],
     imports: [
         CommonModule,
@@ -24,7 +30,7 @@ import { SharedModule } from '../shared/shared.module';
         ResponseCardComponent,
         UserComponent,
         HomeComponent,
-        GameComponent
+        GameComponent,
 
     ],
 })

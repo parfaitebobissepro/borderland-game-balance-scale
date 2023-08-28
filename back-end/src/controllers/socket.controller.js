@@ -7,7 +7,7 @@ const {
 } = require('../services');
 const gameController = require('./game.controller');
 
-const TIMEOUT_AWAITING_USERS_RESPONES = 4000;
+const TIMEOUT_AWAITING_USERS_RESPONES = 2000;
 
 const getParamsOfServer = ({
     socket,

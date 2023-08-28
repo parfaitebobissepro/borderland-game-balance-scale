@@ -1,15 +1,20 @@
-<form action="" #loginForm="ngForm" id="form-register">
-    <div>
-        <label for="image-avatar">
-            <img  class="avatar"  [src]=" currentUser!.image != null ? currentUser!.image : '/assets/images/avatar.png'" alt="">
-        </label>
-        <input type="file" [(ngModel)]="currentUser!.image" (change)="showPreview($event)" name="image" id="image-avatar">
+<div class="container">
+    <div class="container_affiche">
+        <img src="assets/images/affiche.jpg" alt="" class="affiche_img" srcset="">
     </div>
-    <input type="text" [(ngModel)]="currentUser!.pseudo" name="pseudo" #pseudo="ngModel" placeholder="Pseudo" required="true">
-    <span class="error" *ngIf="pseudo.touched">{{ pseudo.errors && pseudo.errors['required'] ? 'le pseudo est obligatoire' : ''}}</span>
-    <div class="container">
-        <button class="button" type="submit" [disabled]="loginForm.invalid" (click)="createGameNewGame()">
-            Créer une partie
-        </button>
-    </div>
-</form>
+    <form action="" #loginForm="ngForm" id="form-register">
+        <div>
+            <label for="image-avatar">
+                <img  class="avatar"  [src]=" currentUser!.image != null ? currentUser!.image : '/assets/images/avatar.png'" alt="">
+            </label>
+            <input type="file" [(ngModel)]="currentUser!.image" (change)="showPreview($event)" name="image" id="image-avatar">
+        </div>
+        <input type="text" [(ngModel)]="currentUser!.pseudo" name="pseudo" #pseudo="ngModel" placeholder="Pseudo" required="true">
+        <span class="error" *ngIf="pseudo.touched">{{ pseudo.errors && pseudo.errors['required'] ? 'le pseudo est obligatoire' : ''}}</span>
+        <div class="container">
+            <button class="button" type="submit" [disabled]="loginForm.invalid" (click)="createGameNewGame()">
+                Créer une partie
+            </button>
+        </div>
+    </form>
+</div>

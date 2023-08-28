@@ -3,6 +3,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 5;
     .avatar {
         width: 200px;
         background-color: rgb(63, 63, 65);
@@ -16,5 +18,25 @@
     }
     #image-avatar {
         display: none;
+    }
+}
+
+
+.container_affiche{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    mix-blend-mode: difference;
+    
+    .affiche_img{
+        max-width: 100%;
+        max-height: 100%;
     }
 }
