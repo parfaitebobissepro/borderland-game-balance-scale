@@ -1,0 +1,44 @@
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 5;
+    padding: 10px;
+    background-color: #0f1d20;
+    .avatar {
+        width: 200px;
+        background-color: rgb(63, 63, 65);
+        box-shadow: 1px 1px #000;
+        border-radius: 2px;
+    }
+    input[type="text"] {
+        max-width: 200px;
+        width: 100%;
+        height: 30px;
+    }
+    #image-avatar {
+        display: none;
+    }
+}
+
+
+.container_affiche{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    mix-blend-mode: difference;
+    
+    .affiche_img{
+        max-width: 100%;
+        max-height: 100%;
+    }
+}

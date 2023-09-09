@@ -1,3 +1,5 @@
+@import "../../shared/variables";
+
 .main-container {
     display: flex;
 }
@@ -10,6 +12,39 @@
 
 .game-panel {
     flex: 1;
+
+    .game-pabel-header{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 50px;
+        color: #ffffff;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+    .copy-container{
+        button{
+            background-color: rgb(37, 99, 235);
+            border: none;
+            color: #ffffff;
+            padding: 10px;
+            cursor: pointer;
+        }
+        input{
+            padding: 8px;
+            width: 300px;
+        }
+    }
+}
+
+.app-control-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .button{
+        align-self: center;
+    }
 }
 
 .current-result {

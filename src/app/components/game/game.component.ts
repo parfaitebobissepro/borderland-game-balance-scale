@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { Room } from 'src/app/models/room';
 import { Step } from 'src/app/models/step';
@@ -38,15 +38,18 @@ export class GameComponent implements OnInit {
   public alreadyStart: Boolean = false;
   public isUserOfCurrentGame: Boolean = true;
   public timeOfRetrieveRequest?: number;
+  public runningAnimation: Boolean = false;
+
+  public urlLink?:string;
 
   //game state variables
-  public isgameOverAndlooser: Boolean = false; 
+  public isgameOverAndlooser: Boolean = false;
   // public isgameOverAndwiner: Boolean = false; 
   // public isgameOverAndwiner: Boolean = false; 
 
 
   //current step variables
-  public currentAverage: number = 0;
+  public currentAverage?: number;
 
   //Observables
   public getCurrentServeParams$$: Observable<ServerParams> = new Observable();
@@ -72,57 +75,71 @@ export class GameComponent implements OnInit {
   //start time of component
   public startFrom = startFrom;
 
+  public audioMap: Map<string, string> = new Map<string, string>([
+    ["gameOverLooser", "assets/audios/manx27s-cry-122258.mp3"],
+    ["gameOverWinner", "assets/audios/tada-fanfare-a-6313.mp3"],
+    ["globalGame", "assets/audios/gamemusic-6082.mp3"],
+    ["button", "assets/audios/mech-keyboard-02-102918.mp3"],
+    ["winnerStep", "assets/audios/goodresult-82807.mp3"],
+    ["mouseOverSound", "assets/audios/success_bell-6776.mp3"]
+  ]);
 
-  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService:AudioService) {
+
+
+
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService: AudioService,private router: Router) {
   }
 
 
 
   ngOnInit() {
+    this.playGameAudio();
 
+    //set url to share
+    this.urlLink = location.origin+this.router.url;
 
     //init serve params
     this.getCurrentServeParams$$ = this.roomsService.getCurrentServeParams();
     this.currentServeParamsSubscription$ = this.getCurrentServeParams$$.subscribe(serveParams => {
-      if(Object.keys(serveParams).length){
+      if (Object.keys(serveParams).length) {
         this.serverParams = serveParams;
         this.subscriptions.add(this.currentServeParamsSubscription$);
-    
-    
+
+
         this.getCurrentRoom$$ = this.roomsService.getCurrentRoom();
         this.currentRoomSubscription$ = this.getCurrentRoom$$.subscribe((room) => {
-    
+
           if (!room.id) {
             //game don't exist in state
-    
+
             //get the id of current room
             this.roomId = this.route.snapshot.paramMap.get('roomId') ?? '';
-    
+
             //get the room
             this.getRoomById$$ = this.roomsService.getRoomById(this.roomId);
             this.roomByIdSubscription$ = this.getRoomById$$?.subscribe((retrieveRoom) => {
-    
+
               //save current room
               this.currentRoom = retrieveRoom;
-    
+
               this.currentStep = retrieveRoom?.steps![retrieveRoom.steps!.length - 1];
 
               //set the retrive request time
               this.timeOfRetrieveRequest = new Date().getTime() - this.startFrom;
-              console.log('timeOfRetrieveRequest',this.timeOfRetrieveRequest);
-              
+              console.log('timeOfRetrieveRequest', this.timeOfRetrieveRequest);
+
 
               this.retrieveTime();
-    
+
               //get user id in user datas
               this.currentUser = this.usersService.getCurrentUserFromLocale();
-    
-    
+
+
               //if we have more than one step then game start already, no more user can join the game
               this.alreadyStart = retrieveRoom.steps && retrieveRoom.steps?.length > 1 ? true : false;
-    
+
               if (this.currentUser) {
-    
+
                 //get user updated datas from the server
                 this.getRemoteUser$$ = this.usersService.getUser(this.currentUser.id!);
                 this.getRemoteUserSubscription$ = this.getRemoteUser$$.subscribe(
@@ -131,7 +148,7 @@ export class GameComponent implements OnInit {
                     if (index == -1) {
                       //TODO:::user is not player of current game he cannot play
                       this.isUserOfCurrentGame = false;
-                      console.log('user is not player of current game he cannot play','color:#F00');
+                      console.log('user is not player of current game he cannot play', 'color:#F00');
                       //Show dailog to new user informations 
                       this.openDialogForJoin();
                     } else {
@@ -139,52 +156,52 @@ export class GameComponent implements OnInit {
                       this.usersService.addCurrentUser(retriveUser);
                       this.socketService.addNewConnectedGame(retriveUser.id!, retrieveRoom.id!);
                     }
-    
+
                   });
-    
-    
+
+
               } else {
                 //Show dailog to new user informations 
                 this.openDialogForJoin();
               }
-    
+
               //get the currentStep and listen the game from server 
               this.listenGameChange();
-    
+
               //listen start of game
               this.listenGameStart();
-    
+
               //listen users changes
               this.listenUsersChange();
             });
-    
+
             //add the subscription for common unsuscribre    
             this.subscriptions.add(this.roomByIdSubscription$);
             this.subscriptions.add(this.getRemoteUserSubscription$);
           } else {
             //game exist in state
-    
+
             //save current room
             this.currentRoom = room;
-    
+
             this.currentStep = room?.steps![room.steps!.length - 1];
             this.roomId = room.roomId!;
-    
+
             this.retrieveTime();
-    
+
             this.listenGameChange();
-    
+
             //listen start of game
             this.listenGameStart();
-    
+
             //listen users changes
             this.listenUsersChange();
           }
-    
+
         });
-    
+
         this.listenCurrentUserChanges();
-    
+
         //add the subscription for common unsuscribre
         this.subscriptions.add(this.currentRoomSubscription$);
       }
@@ -215,6 +232,8 @@ export class GameComponent implements OnInit {
 
       if (newRoom.steps!.length > 1 && newRoom?.steps![newRoom.steps!.length - 1].id != this.currentStep?.id) {
         this.restartCounter(this.timeInterStep);
+         this.playStepAudio();
+
 
 
         //check state of currentUser
@@ -238,7 +257,7 @@ export class GameComponent implements OnInit {
 
   openDialogForJoin(): void {
     this.dialog.open<RegisterComponent>(RegisterComponent, {
-      width: '250px',
+      // width: '250px',
       enterAnimationDuration: '20',
       exitAnimationDuration: '10',
       data: {
@@ -257,15 +276,30 @@ export class GameComponent implements OnInit {
 
   processGameOverLooser(): void {
     this.isgameOverAndlooser = true;
-    this.audioService.playAudio('assets/audios/manx27s-cry-122258.mp3');
+    this.audioService.playAudio(this.audioMap.get('gameOverLooser')!);
   }
 
   processGameOverWinner(): void {
+    this.audioService.playAudio(this.audioMap.get('gameOverWinner')!);
     this.dialog.open(GameCongratComponent, {
       width: '40vw',
       enterAnimationDuration: '20',
       exitAnimationDuration: '10',
     });
+    
+  }
+
+  playGameAudio(){
+    // this.audioService.playAudio(this.audioMap.get('globalGame')!);
+  }
+  playStepAudio(){
+    this.audioService.playAudio(this.audioMap.get('winnerStep')!);
+  }
+  playKeyboardAudio(){
+    this.audioService.playAudio(this.audioMap.get('button')!);
+  }
+  PlaysoundMouseOver(){
+    this.audioService.playAudio(this.audioMap.get('mouseOverSound')!);
   }
 
   listenCurrentUserChanges() {
@@ -298,14 +332,14 @@ export class GameComponent implements OnInit {
     this.getListeUsersChange$$ = this.socketService.listenUsersChange(this.currentRoom?.id!);
     this.getLisenUsersChangeSubscription$ = this.getListeUsersChange$$.subscribe((data: any) => {
       //update user in laststep of currentRoom and save this
-      this.currentStep!.users = this.currentStep!.users!.map( (user: User) => {
+      this.currentStep!.users = this.currentStep!.users!.map((user: User) => {
         const userUpdate = user.id == data.id ? { ...user, ...data } as User : user;
-        if(user.id == this.currentUser!.id){
+        if (user.id == this.currentUser!.id) {
           this.currentUser = userUpdate;
         }
         return userUpdate;
       });
-      
+
       // this.roomsService.addCurrentRoom(this.currentRoom!);
     });
   }
@@ -326,13 +360,15 @@ export class GameComponent implements OnInit {
   }
 
   updatResponseToSend(response: Number) {
+    this. playKeyboardAudio();
     this.responseTosend = response;
   }
+
 
   sendCurrentResponse() {
     this.responseTosend = this.responseTosend != null ? this.responseTosend : this.getRandomInt(100);
     this.socketService.respondToStepOfRoom(this.responseTosend, this.roomId, this.currentUser!, this.currentStep?.id!);
-    
+
     //reset response
     this.responseTosend = undefined;
   }
@@ -348,19 +384,33 @@ export class GameComponent implements OnInit {
 
   retrieveTime(): void {
     const TIME_OF_STEP_SPEND = new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime();
-    const DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest? Math.round(this.timeOfRetrieveRequest/1000)*1000 : 0) + this.timeInterStep;
+    const DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest ? Math.round(this.timeOfRetrieveRequest / 1000) * 1000 : 0) + this.timeInterStep;
 
     //Retreive the timer
     this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), DURATION_LEFT);
 
     //reset time of retrieve at undefined
-    if(this.timeOfRetrieveRequest){
+    if (this.timeOfRetrieveRequest) {
       this.timeOfRetrieveRequest = undefined;
     }
   }
 
+  handleCopy(e:Event){
+    if(!this.runningAnimation){
+        this.runningAnimation = true;
+        const eventTarget = (e.target as HTMLInputElement )!;
+        eventTarget.textContent = "Copied !";
 
+        setTimeout(() => {
+          eventTarget.textContent = "Copy";
+            this.runningAnimation = false;
+        }, 1250);
+    }
 
+    navigator.clipboard.writeText(this.urlLink!);
+  }
+
+  
   async makeGameStepRules() {
     let step = this.currentStep!;
 

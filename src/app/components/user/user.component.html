@@ -1,4 +1,4 @@
-<div class="user" [ngClass]="{'winner':user?.currentWinner,'current-user':isCurrentUser }">
+<div class="user" [ngClass]="{'winner':user?.currentWinner,'current-user':isCurrentUser, 'looser': user?.globalScore! <= 0 }">
     <div class="game-label">
         WIN
     </div>
@@ -7,10 +7,13 @@
         <div class="conainer-avatar">
             <div id="circle" *ngIf="user?.connected">
             </div>
-            <img src="/assets/images/avatar.jpeg" alt="">
+            <img [src]="isCurrentUser ? '/assets/images/avatar3..avif' : '/assets/images/default-avatar.jpg'" alt="">
         </div>
-        <span class="name">{{ user?.pseudo }} {{ user?.globalScore }}
-      {{ user?.admin?'admin' : '' }}</span>
-        <app-response-card [number]="user?.currentResponse"></app-response-card>
+        <div class="informations" style="display: flex;justify-content: center; flex-direction: column; justify-content: start;">
+            <span class="name">{{ user?.pseudo }} {{ user?.admin?'(admin)' : '' }} </span>
+            <span class="globalScore">Score : <span class="primary-color ">{{ user?.globalScore }}</span></span>
+        </div>
+        
+        <app-response-card [number]="user?.currentResponse"  *ngIf="user?.globalScore! > 0"></app-response-card>
     </div>
 </div>

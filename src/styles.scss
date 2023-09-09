@@ -79,15 +79,9 @@ body {
     height: 100%;
 }
 
-.container {
-    // width: 100%;
-    // min-height: 100vh;
-    // display: flex;
-    // justify-content: center;
-    // align-items: center;
-    // flex-wrap: wrap;
-    // gap: 120px;
-    // background: #27282c;
+
+.primary-color{
+    color: $button-submit-color;
 }
 
 .button {
@@ -114,6 +108,10 @@ body {
     box-shadow: 0 0 0px $button-submit-color;
 }
 
+.button:hover svg * {
+    fill: #FFF;
+}
+
 .button::before {
     content: '';
     position: absolute;
@@ -125,6 +123,10 @@ body {
     z-index: -1;
     transform: scale(0);
     transition: 0.05s;
+}
+
+.button svg *{
+    fill:$button-submit-color;
 }
 
 .button:hover::before {
