@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'environment';
+import { environment } from 'environmentprod';
 import { Observable } from 'rxjs';
 import { io } from 'socket.io-client';
 import { Room } from 'src/app/models/room';
