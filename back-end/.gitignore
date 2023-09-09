@@ -2,7 +2,7 @@
 node_modules
 
 # Environment varibales
-.env*
+# .env*
 
 #bash commande
 truncate_collections.bash
