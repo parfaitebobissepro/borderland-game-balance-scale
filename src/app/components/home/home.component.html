@@ -5,7 +5,7 @@
     <form action="" #loginForm="ngForm" id="form-register">
         <div>
             <label for="image-avatar">
-                <img  class="avatar"  [src]=" currentUser!.image != null ? currentUser!.image : '/assets/images/avatar3..avif   '" alt="">
+                <img  class="avatar"  [src]=" currentUser!.image != null ? currentUser!.image : 'assets/images/avatar3..avif   '" alt="">
             </label>
             <input type="file" [(ngModel)]="currentUser!.image" (change)="showPreview($event)" name="image" id="image-avatar">
         </div>

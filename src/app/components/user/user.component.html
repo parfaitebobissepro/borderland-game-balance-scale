@@ -7,7 +7,7 @@
         <div class="conainer-avatar">
             <div id="circle" *ngIf="user?.connected">
             </div>
-            <img [src]="isCurrentUser ? '/assets/images/avatar3..avif' : '/assets/images/default-avatar.jpg'" alt="">
+            <img [src]="isCurrentUser ? 'assets/images/avatar3..avif' : '/assets/images/default-avatar.jpg'" alt="">
         </div>
         <div class="informations" style="display: flex;justify-content: center; flex-direction: column; justify-content: start;">
             <span class="name">{{ user?.pseudo }} {{ user?.admin?'(admin)' : '' }} </span>
