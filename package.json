@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --base-href",
+    "build": "ng build --base-href https://parfaitebobissepro.github.io/borderland-game-balance-scale/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
