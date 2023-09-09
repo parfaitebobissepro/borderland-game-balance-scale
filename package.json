@@ -1,11 +1,10 @@
 {
-  "homepage": "https://parfaitebobissepro.github.io/borderland-game-balance-scale",
   "name": "balance-scale",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --output-path docs --base-href borderland-game-balance-scale",
+    "build": "ng build --output-path docs --base-href /borderland-game-balance-scale/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
