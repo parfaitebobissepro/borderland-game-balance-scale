@@ -1,5 +1,5 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute} from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { Room } from 'src/app/models/room';
 import { Step } from 'src/app/models/step';
@@ -13,7 +13,6 @@ import { ServerParams } from 'src/app/models/server-params';
 import { startFrom } from 'src/main';
 import { GameRulesComponent } from '../game-rules/game-rules.component';
 import { GameCongratComponent } from '../game-congrat/game-congrat.component';
-import { GameOverComponent } from '../game-over/game-over.component';
 import { AudioService } from 'src/app/services/audio/audio.service';
 
 @Component({
@@ -87,7 +86,7 @@ export class GameComponent implements OnInit {
 
 
 
-  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService: AudioService,private router: Router) {
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService: AudioService) {
   }
 
 
@@ -96,7 +95,7 @@ export class GameComponent implements OnInit {
     this.playGameAudio();
 
     //set url to share
-    this.urlLink = location.origin+this.router.url;
+    this.urlLink = window.location.href;
 
     //init serve params
     this.getCurrentServeParams$$ = this.roomsService.getCurrentServeParams();

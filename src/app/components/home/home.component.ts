@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { User } from 'src/app/models/user';
 import { RoomsService } from 'src/app/services/rooms/rooms.service';
 import { AudioService } from 'src/app/services/audio/audio.service';
+import { MatDialog } from '@angular/material/dialog';
+import { GameRulesComponent } from '../game-rules/game-rules.component';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +19,7 @@ export class HomeComponent implements OnInit {
     ["mouseOverSound", "assets/audios/success_bell-6776.mp3"],
   ]);
 
-  constructor(private socketService: SocketioService, private roomsService: RoomsService, private router: Router,  public audioService: AudioService) {
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private router: Router,  public audioService: AudioService, public dialog: MatDialog,) {
   }
 
   ngOnInit(): void {
@@ -44,6 +46,14 @@ export class HomeComponent implements OnInit {
   }
 
   // Sub
+
+  openDialogRules(): void {
+    this.dialog.open(GameRulesComponent, {
+      enterAnimationDuration: '20',
+      exitAnimationDuration: '10',
+    });
+  }
+
 
 
   PlaysoundMouseOver(){
