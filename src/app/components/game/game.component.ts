@@ -289,7 +289,7 @@ export class GameComponent implements OnInit {
   }
 
   playGameAudio(){
-    // this.audioService.playAudio(this.audioMap.get('globalGame')!);
+    this.audioService.playAudio(this.audioMap.get('globalGame')!);
   }
   playStepAudio(){
     this.audioService.playAudio(this.audioMap.get('winnerStep')!);

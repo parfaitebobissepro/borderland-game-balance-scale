@@ -10,11 +10,11 @@ export class AudioService {
 
   public playAudio(path: string) {
     this.removeAudio(path);
-    let audio2 = new Audio();
-    audio2.src = path;
-    this.audios.push(audio2);
-    // audio2.load();
-    audio2.play();
+    let audio = new Audio();
+    audio.src = path;
+    this.audios.push(audio);
+    audio.load();
+    audio.play();
   }
 
   public pauseAudio(path: string) {
