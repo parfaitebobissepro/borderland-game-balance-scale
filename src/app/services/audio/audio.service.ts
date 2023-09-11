@@ -9,12 +9,12 @@ export class AudioService {
   constructor() { }
 
   public playAudio(path: string) {
-    this.removeAudio(path);
+    // this.removeAudio(path);
     let audio = new Audio();
     audio.src = path;
-    this.audios.push(audio);
     audio.load();
     audio.play();
+    this.audios.push(audio);
   }
 
   public pauseAudio(path: string) {
