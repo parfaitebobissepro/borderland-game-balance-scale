@@ -91,7 +91,7 @@
         <span class="sel" *ngIf="serverParams && serverParams!.sel">{{ serverParams.sel }}</span>
         <span class="operation">=</span>
         <ng-container *ngIf="serverParams && serverParams!.sel">
-          <app-response-card [number]="currentAverage * serverParams.sel"></app-response-card>
+          <app-response-card [number]="getRound(currentAverage * serverParams.sel)"></app-response-card>
         </ng-container>
 
       </div>

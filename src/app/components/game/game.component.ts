@@ -31,7 +31,7 @@ export class GameComponent implements OnInit {
   public roomId: string = '';
   public timerDate?: Date;
   public nmbrMilliSecond: number = 0;
-  public timeInterStep: number = 4000;
+  public timeInterStep: number = 10000;
   public serverParams?: ServerParams;
   public responseTosend?: Number;
   public alreadyStart: Boolean = false;
@@ -487,6 +487,10 @@ export class GameComponent implements OnInit {
 
     // Calculating the average by dividing the sum by the number of elements
     return sum / arrayResponses.length;
+  }
+
+  getRound(number:number){
+    return +number.toFixed(2);
   }
 
 
