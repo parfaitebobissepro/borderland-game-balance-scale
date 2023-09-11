@@ -44,7 +44,7 @@ export class RegisterComponent implements OnInit {
   }
 
   PlaysoundMouseOver(){
-    this.audioService.stopAllAudio();
+    // this.audioService.stopAllAudio();
     this.audioService.playAudio(this.audioMap.get('mouseOverSound')!);
   }
 

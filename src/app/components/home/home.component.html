@@ -12,18 +12,18 @@
         <input type="text" [(ngModel)]="currentUser!.pseudo" name="pseudo" #pseudo="ngModel" placeholder="Pseudo" required="true">
         <span class="error" *ngIf="pseudo.touched">{{ pseudo.errors && pseudo.errors['required'] ? 'le pseudo est obligatoire' : ''}}</span>
         <div class="container">
-            <button class="button" type="submit" [disabled]="loginForm.invalid" (click)="createGameNewGame()" (mouseover)="loginForm.invalid ? false : PlaysoundMouseOver()">
+            <button class="button" type="submit" [disabled]="loginForm.invalid" (click)="createGameNewGame()" (mouseout)="loginForm.invalid ? false : playsoundMouseOver()">
                 Créer une partie
             </button>
         </div>
     </form>
     <button class="button" style="display: flex; align-items: center; gap: 10px;" id="game-rule-button" (click)="openDialogRules
-            ()" (mouseover)="PlaysoundMouseOver()">
+            ()" (mouseover)="playsoundMouseOver()">
         <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="1280.000000pt" height="1280.000000pt"
           viewBox="0 0 1280.000000 1280.000000" preserveAspectRatio="xMidYMid meet" width="30" height="30">
           <metadata>
             Created by potrace 1.15, written by Peter Selinger 2001-2017
-          </metadata>
+          </metadata> 
           <g transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
             <path d="M8560 9654 c-19 -2 -98 -9 -175 -15 -77 -6 -203 -21 -281 -34 -436
                 -74 -706 -194 -925 -414 -53 -53 -108 -112 -122 -131 l-27 -35 -26 35 c-104

@@ -9,7 +9,7 @@ export class AudioService {
   constructor() { }
 
   public playAudio(path: string) {
-    // this.removeAudio(path);
+    this.removeAudio(path);
     let audio = new Audio();
     audio.src = path;
     audio.load();
