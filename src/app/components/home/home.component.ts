@@ -26,6 +26,7 @@ export class HomeComponent implements OnInit {
     //intialise user
     this.currentUser = new User();
     this.currentUser.pseudo = '';
+    this.audioService.stopAllAudio();
 
   }
 

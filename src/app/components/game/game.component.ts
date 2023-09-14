@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { Room } from 'src/app/models/room';
 import { Step } from 'src/app/models/step';
@@ -31,7 +31,8 @@ export class GameComponent implements OnInit {
   public roomId: string = '';
   public timerDate?: Date;
   public nmbrMilliSecond: number = 0;
-  public timeInterStep: number = 10000;
+  public timeInterStep: number = 5000;
+  public startTimeBeforeFirstStep: number = 60000;
   public serverParams?: ServerParams;
   public responseTosend?: Number;
   public alreadyStart: Boolean = false;
@@ -39,12 +40,11 @@ export class GameComponent implements OnInit {
   public timeOfRetrieveRequest?: number;
   public runningAnimation: Boolean = false;
 
-  public urlLink?:string;
+  public urlLink?: string;
 
   //game state variables
   public isgameOverAndlooser: Boolean = false;
-  // public isgameOverAndwiner: Boolean = false; 
-  // public isgameOverAndwiner: Boolean = false; 
+  public gameStarted: Boolean = false;
 
 
   //current step variables
@@ -83,13 +83,8 @@ export class GameComponent implements OnInit {
     ["mouseOverSound", "assets/audios/success_bell-6776.mp3"]
   ]);
 
-
-
-
-  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService: AudioService) {
+  constructor(private socketService: SocketioService, private roomsService: RoomsService, private route: ActivatedRoute, private usersService: UsersService, public dialog: MatDialog, public audioService: AudioService, private router: Router) {
   }
-
-
 
   ngOnInit() {
     this.playGameAudio();
@@ -231,15 +226,14 @@ export class GameComponent implements OnInit {
 
       if (newRoom.steps!.length > 1 && newRoom?.steps![newRoom.steps!.length - 1].id != this.currentStep?.id) {
         this.restartCounter(this.timeInterStep);
-         this.playStepAudio();
+        this.playStepAudio();
 
 
 
         //check state of currentUser
-        if (this.currentUser!.globalScore! <= 0) {
+        if (this.currentUser!.globalScore! == 0) {
           console.log('Game Over');
           this.processGameOverLooser();
-          // this.subscriptions.unsubscribe();
         }
       }
       this.roomsService.addCurrentRoom(newRoom);
@@ -285,19 +279,19 @@ export class GameComponent implements OnInit {
       enterAnimationDuration: '20',
       exitAnimationDuration: '10',
     });
-    
+
   }
 
-  playGameAudio(){
+  playGameAudio() {
     this.audioService.playAudio(this.audioMap.get('globalGame')!);
   }
-  playStepAudio(){
+  playStepAudio() {
     this.audioService.playAudio(this.audioMap.get('winnerStep')!);
   }
-  playKeyboardAudio(){
+  playKeyboardAudio() {
     this.audioService.playAudio(this.audioMap.get('button')!);
   }
-  PlaysoundMouseOver(){
+  PlaysoundMouseOver() {
     this.audioService.playAudio(this.audioMap.get('mouseOverSound')!);
   }
 
@@ -344,7 +338,11 @@ export class GameComponent implements OnInit {
   }
 
   counterEnd(): void {
-    this.sendCurrentResponse();
+    if (this.currentStep!.users!.length > 1) {
+      this.sendCurrentResponse();
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   activeTimerByDate(date: Date, nmbrMilliSecond: number): void {
@@ -359,7 +357,7 @@ export class GameComponent implements OnInit {
   }
 
   updatResponseToSend(response: Number) {
-    this. playKeyboardAudio();
+    this.playKeyboardAudio();
     this.responseTosend = response;
   }
 
@@ -379,11 +377,17 @@ export class GameComponent implements OnInit {
 
   lauchGame(): void {
     this.socketService.launchGame(this.roomId);
+    this.gameStarted = true;
   }
 
   retrieveTime(): void {
     const TIME_OF_STEP_SPEND = new Date(this.currentRoom!.actualServerDate!).getTime() - new Date(this.currentStep?.startDate!).getTime();
-    const DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest ? Math.round(this.timeOfRetrieveRequest / 1000) * 1000 : 0) + this.timeInterStep;
+    let DURATION_LEFT;
+    if (this.currentStep?.rang == 0) {
+      DURATION_LEFT = this.startTimeBeforeFirstStep;
+    } else {
+      DURATION_LEFT = this.currentStep?.durationMillisecond! - TIME_OF_STEP_SPEND + (this.timeOfRetrieveRequest ? Math.round(this.timeOfRetrieveRequest / 1000) * 1000 : 0);
+    }
 
     //Retreive the timer
     this.activeTimerByDate(new Date(this.currentRoom!.actualServerDate!), DURATION_LEFT);
@@ -394,91 +398,19 @@ export class GameComponent implements OnInit {
     }
   }
 
-  handleCopy(e:Event){
-    if(!this.runningAnimation){
-        this.runningAnimation = true;
-        const eventTarget = (e.target as HTMLInputElement )!;
-        eventTarget.textContent = "Copied !";
+  handleCopy(e: Event) {
+    if (!this.runningAnimation) {
+      this.runningAnimation = true;
+      const eventTarget = (e.target as HTMLInputElement)!;
+      eventTarget.textContent = "Copied !";
 
-        setTimeout(() => {
-          eventTarget.textContent = "Copy";
-            this.runningAnimation = false;
-        }, 1250);
+      setTimeout(() => {
+        eventTarget.textContent = "Copy";
+        this.runningAnimation = false;
+      }, 1250);
     }
 
     navigator.clipboard.writeText(this.urlLink!);
-  }
-
-  
-  async makeGameStepRules() {
-    let step = this.currentStep!;
-
-    //if step not close
-
-  }
-
-  async getStepWinner() {
-    let step = this.currentStep!;
-
-    //get user most near to average
-    const MAX = 100;
-    let min = MAX;
-    let userStepwinner = MAX;
-    let isExactlyTargetNumber = false;
-
-    let usersWithSameResponses: Array<String> = [];
-
-
-
-    //TODO: check number of participats before assign winner with right rule
-    if (step.users!.length <= 2) {
-      //TODO: if we have 2 participants
-
-      // let userWithResponseZero = step.users?.find((user) => user.currentResponse == 0);
-
-      // if (userWithResponseZero) {
-      //   let otherUser = step.users?.find((user) => user.currentResponse == MAX);
-      //   if (otherUser) {
-      //     //user with 0 response is loser 
-      //     userWithResponseZero!.globalScore!--;
-      //     await userService.updateUserById(userWithResponseZero.id, userWithResponseZero);
-
-      //     //other user is winner
-      //     otherUser.currentWinner = true;
-      //     await userService.updateUserById(otherUser.id, otherUser);
-
-      //     //return game result
-      //     return {
-      //       userStepwinner: otherUser
-      //     }
-      //   }
-      // }
-
-    }
-
-    if (step.users!.length <= 4) {
-      //TODO: if we have 3 participants
-
-      //decrement globalScore of users
-      // for (let user of step.users) {
-      //   let userWithSameResponse = step.users.find((element) => element.currentResponse == user.currentResponse && element.id != user.id);
-      //   if (userWithSameResponse) {
-      //     user.sameCurrentResponse = true;
-      //     user.globalScore--;
-      //     await userService.updateUserById(user.id, user);
-      //     usersWithSameResponses.push(user);
-      //   }
-      // }
-
-      // //remove users with same Responses
-      // usersWithSameResponses = usersWithSameResponses.map((userWithSameResponses) => userWithSameResponses = userWithSameResponses.id);
-      // step.users = step.users.filter((user) => !usersWithSameResponses.includes(user.id));
-    }
-
-
-    if (step.users!.length > 0) {
-      //get array of responses
-    }
   }
 
   getAverage(arrayResponses: Array<number>): number {
@@ -489,10 +421,9 @@ export class GameComponent implements OnInit {
     return sum / arrayResponses.length;
   }
 
-  getRound(number:number){
+  getRound(number: number) {
     return +number.toFixed(2);
   }
-
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();

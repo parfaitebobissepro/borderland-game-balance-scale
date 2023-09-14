@@ -23,7 +23,6 @@ export class AudioService {
     console.log(this.audios[audioIndex].src);
     this.audios[audioIndex].pause();
     this.audios[audioIndex].currentTime = 0;
-    // this.removeAudio(path);
 
   }
 
@@ -37,7 +36,7 @@ export class AudioService {
 
 
   stopAllAudio() {
-    this.audios.forEach(audio => audio.pause());
+    this.audios.forEach(audio => { audio.pause(); audio.currentTime = 0 });
   };
 
 
