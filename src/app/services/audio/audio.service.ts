@@ -19,8 +19,6 @@ export class AudioService {
 
   public pauseAudio(path: string) {
     let audioIndex: number = this.audios.findIndex((audio) => audio.src.includes(path));
-    console.log(this.audios);
-    console.log(this.audios[audioIndex].src);
     this.audios[audioIndex].pause();
     this.audios[audioIndex].currentTime = 0;
 

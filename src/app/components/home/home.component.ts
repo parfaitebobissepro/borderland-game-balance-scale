@@ -58,8 +58,6 @@ export class HomeComponent implements OnInit {
 
 
   playsoundMouseOver(){
-    // this.audioService.stopAllAudio();
-    console.log("mouse over");
     this.audioService.playAudio(this.audioMap.get('mouseOverSound')!);
   }
 
